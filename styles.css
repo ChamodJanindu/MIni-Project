@@ -266,6 +266,83 @@ footer {
     display: none !important;
 }
 
+/* Curriculum Styles */
+.hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.curriculum-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.filter-btn {
+    background-color: #e9ecef;
+    color: var(--text-color);
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.curriculum-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.curriculum-year {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.curriculum-year h4 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    background: #f0f7ff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.curriculum-semester {
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+}
+
+.curriculum-semester h5 {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.curriculum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.curriculum-table th, .curriculum-table td {
+    text-align: left;
+    padding: 0.8rem;
+    border-bottom: 1px solid #eee;
+}
+
+.curriculum-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.curriculum-table tr:hover {
+    background-color: #fcfcfc;
+}
+
 @media (max-width: 768px) {
     .hero h2 {
         font-size: 2rem;
