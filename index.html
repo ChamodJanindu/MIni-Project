@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCSC Study Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 id="logo">UCSC Study Tracker</h1>
+            <nav id="main-nav" class="hidden">
+                <button id="reset-btn" class="btn btn-outline">Switch Semester</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Landing Section -->
+        <section id="landing-section" class="active">
+            <div class="hero">
+                <h2>Plan and track your semester study time.</h2>
+                <p>Designed for UCSC students to optimize their learning based on module credit values (LP).</p>
+                <button id="start-planning-btn" class="btn btn-primary btn-large">Start Planning</button>
+            </div>
+        </section>
+
+        <!-- Setup Section -->
+        <section id="setup-section">
+            <div class="card setup-card">
+                <h3>Semester Setup</h3>
+                <form id="setup-form">
+                    <div class="form-group">
+                        <label for="course-select">Course</label>
+                        <select id="course-select" required>
+                            <option value="" disabled selected>Select Course</option>
+                            <option value="CS">Computer Science (CS)</option>
+                            <option value="IS">Information Systems (IS)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="year-select">Year</label>
+                        <select id="year-select" required>
+                            <option value="" disabled selected>Select Year</option>
+                            <option value="Year1">Year 1</option>
+                            <option value="Year2">Year 2</option>
+                            <option value="Year3">Year 3</option>
+                            <option value="Year4">Year 4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="semester-select">Semester</label>
+                        <select id="semester-select" required>
+                            <option value="" disabled selected>Select Semester</option>
+                            <option value="Semester1">Semester 1</option>
+                            <option value="Semester2">Semester 2</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">Generate Study Plan</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section">
+            <div id="overall-progress-container" class="card summary-card">
+                <h3>Overall Semester Progress</h3>
+                <div class="overall-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Hours Completed</span>
+                        <span id="total-hours-completed" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Target Hours</span>
+                        <span id="total-target-hours" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Hours Remaining</span>
+                        <span id="total-hours-remaining" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="progress-bar-container large">
+                    <div id="overall-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
+                    <span id="overall-progress-percent" class="progress-text">0%</span>
+                </div>
+            </div>
+
+            <div id="modules-container" class="modules-grid">
+                <!-- Module cards will be injected here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 UCSC Study Tracker. Built for UCSC Students.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

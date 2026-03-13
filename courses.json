@@ -1,0 +1,264 @@
+{
+  "CS": {
+    "year1": {
+      "semester1": [
+        {
+          "code": "SCS1301",
+          "name": "Data Structures and Program Design in C",
+          "lectureCredits": 3,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS1302",
+          "name": "Discrete Mathematics",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "SCS1303",
+          "name": "Introduction to Software Engineering",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "SCS1304",
+          "name": "Problem Solving Strategies and Computation Approaches",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        }
+      ],
+      "semester2": [
+        {
+          "code": "SCS1305",
+          "name": "Object Oriented Programming",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS1306",
+          "name": "Computer Systems Fundamentals",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS1307",
+          "name": "Mathematics for Computing",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "SCS1308",
+          "name": "Communication Skills",
+          "lectureCredits": 1,
+          "practicalCredits": 0
+        }
+      ]
+    },
+    "year2": {
+      "semester1": [
+        {
+          "code": "SCS2301",
+          "name": "Algorithms and Data Structures",
+          "lectureCredits": 3,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS2302",
+          "name": "Database Management Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS2303",
+          "name": "Operating Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS2304",
+          "name": "Computer Networks",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        }
+      ],
+      "semester2": [
+        {
+          "code": "SCS2305",
+          "name": "Software Engineering",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS2306",
+          "name": "Theory of Computation",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "SCS2307",
+          "name": "Human Computer Interaction",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "SCS2308",
+          "name": "Web Technologies",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        }
+      ]
+    },
+    "year3": {
+      "semester1": [
+        {
+          "code": "SCS3301",
+          "name": "Artificial Intelligence",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS3302",
+          "name": "Machine Learning",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS3303",
+          "name": "Distributed Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        }
+      ],
+      "semester2": [
+        {
+          "code": "SCS3304",
+          "name": "Data Mining",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "SCS3305",
+          "name": "Computer Security",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        }
+      ]
+    },
+    "year4": {
+      "semester1": [
+        {
+          "code": "SCS4301",
+          "name": "Research Project I",
+          "lectureCredits": 1,
+          "practicalCredits": 3
+        }
+      ],
+      "semester2": [
+        {
+          "code": "SCS4302",
+          "name": "Research Project II",
+          "lectureCredits": 1,
+          "practicalCredits": 3
+        }
+      ]
+    }
+  },
+  "IS": {
+    "year1": {
+      "semester1": [
+        {
+          "code": "IS1101",
+          "name": "Introduction to Information Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "IS1102",
+          "name": "Business Mathematics",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "IS1103",
+          "name": "Programming for Information Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        }
+      ],
+      "semester2": [
+        {
+          "code": "IS1201",
+          "name": "Fundamentals of Information Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "IS1202",
+          "name": "Database Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        },
+        {
+          "code": "IS1203",
+          "name": "Web Technologies",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        }
+      ]
+    },
+    "year2": {
+      "semester1": [
+        {
+          "code": "IS2101",
+          "name": "Systems Analysis and Design",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "IS2102",
+          "name": "Enterprise Architecture",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "IS2103",
+          "name": "Database Design",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        }
+      ],
+      "semester2": [
+        {
+          "code": "IS2201",
+          "name": "Business Intelligence",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        },
+        {
+          "code": "IS2202",
+          "name": "E-Commerce Systems",
+          "lectureCredits": 2,
+          "practicalCredits": 1
+        }
+      ]
+    },
+    "year3": {
+      "semester1": [
+        {
+          "code": "IS3101",
+          "name": "Information Systems Strategy",
+          "lectureCredits": 2,
+          "practicalCredits": 0
+        }
+      ],
+      "semester2": [
+        {
+          "code": "IS3201",
+          "name": "Information Systems Project",
+          "lectureCredits": 1,
+          "practicalCredits": 3
+        }
+      ]
+    }
+  }
+}
