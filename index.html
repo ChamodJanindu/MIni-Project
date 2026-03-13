@@ -11,6 +11,7 @@
         <div class="container">
             <h1 id="logo">UCSC Study Tracker</h1>
             <nav id="main-nav" class="hidden">
+                <button id="view-curriculum-btn" class="btn btn-outline">View Curriculum</button>
                 <button id="reset-btn" class="btn btn-outline">Switch Semester</button>
             </nav>
         </div>
@@ -22,7 +23,25 @@
             <div class="hero">
                 <h2>Plan and track your semester study time.</h2>
                 <p>Designed for UCSC students to optimize their learning based on module credit values (LP).</p>
-                <button id="start-planning-btn" class="btn btn-primary btn-large">Start Planning</button>
+                <div class="hero-btns">
+                    <button id="start-planning-btn" class="btn btn-primary btn-large">Start Planning</button>
+                    <button id="landing-curriculum-btn" class="btn btn-outline btn-large">Browse Curriculum</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Curriculum Section -->
+        <section id="curriculum-section">
+            <div class="card">
+                <h3>UCSC Degree Curriculum</h3>
+                <div class="curriculum-filters">
+                    <button class="btn btn-small filter-btn active" data-course="CS">Computer Science</button>
+                    <button class="btn btn-small filter-btn" data-course="IS">Information Systems</button>
+                </div>
+                <div id="curriculum-display" class="curriculum-grid">
+                    <!-- Curriculum data will be injected here -->
+                </div>
+                <button id="back-to-landing-btn" class="btn btn-outline full-width" style="margin-top: 20px;">Back</button>
             </div>
         </section>
 
