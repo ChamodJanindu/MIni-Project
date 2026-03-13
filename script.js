@@ -225,7 +225,7 @@ const themeToggle = document.getElementById('checkbox');
 document.addEventListener('DOMContentLoaded', () => {
     loadProgress();
     initEventListeners();
-    createParticles();
+    // createParticles();
     initTheme();
     
     if (appState.course && appState.year && appState.semester) {
@@ -259,9 +259,17 @@ function initEventListeners() {
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            const course = e.target.dataset.course;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            renderCurriculum(e.target.dataset.course);
+            
+            // Move indicator
+            const indicator = document.getElementById('course-indicator');
+            if (indicator) {
+                indicator.style.left = course === 'CS' ? '6px' : 'calc(50% + 2px)';
+            }
+
+            renderCurriculum(course);
         });
     });
 
@@ -332,8 +340,19 @@ function showSection(sectionId) {
     const isApp = sectionId === 'dashboard' || sectionId === 'timer' || sectionId === 'curriculum' || sectionId === 'achievements';
     nav.classList.toggle('hidden', !isApp);
 
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.toggle('active', link.getAttribute('data-section').replace('-section', '') === sectionId);
+    // Update Main Nav Active State & Indicator
+    const links = document.querySelectorAll('.nav-link');
+    const indicator = document.querySelector('.main-nav-indicator');
+    
+    links.forEach(link => {
+        const linkSection = link.getAttribute('data-section').replace('-section', '');
+        const isActive = linkSection === sectionId;
+        link.classList.toggle('active', isActive);
+        
+        if (isActive && indicator) {
+            indicator.style.left = `${link.offsetLeft}px`;
+            indicator.style.width = `${link.offsetWidth}px`;
+        }
     });
 
     if (sectionId === 'curriculum') {
@@ -406,33 +425,83 @@ function renderCurriculum(course) {
     const display = document.getElementById('curriculum-display');
     if (!display || !COURSE_DATA[course]) return;
     display.innerHTML = '';
-    
+
+    const roadmap = document.createElement('div');
+    roadmap.className = 'curriculum-roadmap';
+
     const data = COURSE_DATA[course];
-    Object.keys(data).forEach(year => {
-        const yearCard = document.createElement('div');
-        yearCard.style.marginBottom = '2rem';
-        yearCard.innerHTML = `<h4 style="color: var(--accent-primary); margin-bottom: 1rem;">${year.replace('Year', 'Year ')}</h4>`;
-        
-        const grid = document.createElement('div');
-        grid.className = 'modules-list';
-        
+    Object.keys(data).forEach((year, yIdx) => {
+        const yearSection = document.createElement('div');
+        yearSection.className = 'roadmap-year-section';
+        yearSection.style.transitionDelay = `${yIdx * 0.2}s`;
+
+        const yearHeader = document.createElement('div');
+        yearHeader.className = 'roadmap-year-header';
+        yearHeader.innerHTML = `
+            <div class="year-node"><span>${year.replace('Year', 'Y')}</span></div>
+            <h3 class="year-title">${year.replace('Year', 'Year ')}</h3>
+        `;
+        yearSection.appendChild(yearHeader);
+
+        const semestersContainer = document.createElement('div');
+        semestersContainer.className = 'roadmap-semesters';
+
         Object.keys(data[year]).forEach(semester => {
+            const semStage = document.createElement('div');
+            semStage.className = 'semester-stage';
+
+            const semTitle = document.createElement('div');
+            semTitle.className = 'semester-title-row';
+            semTitle.innerHTML = `
+                <span class="semester-badge">${semester.replace('Semester', 'Semester ')}</span>
+                <div style="height: 1px; flex: 1; background: var(--border-subtle); opacity: 0.5;"></div>
+            `;
+            semStage.appendChild(semTitle);
+
+            const grid = document.createElement('div');
+            grid.className = 'roadmap-grid';
+
             data[year][semester].forEach(m => {
                 const item = document.createElement('div');
-                item.className = 'module-card';
-                item.style.padding = '1rem';
+                item.className = 'roadmap-card';
                 item.innerHTML = `
-                    <div class="module-meta"><span>${m.id}</span><span>L:${m.lectureCredits} P:${m.practicalCredits}</span></div>
-                    <div style="font-size: 0.9rem; font-weight: 500;">${m.name}</div>
+                    <span class="mod-id">${m.id}</span>
+                    <div class="mod-name">${m.name}</div>
+                    <div class="mod-stats">
+                        <span class="stat-pill">L: ${m.lectureCredits}</span>
+                        <span class="stat-pill">P: ${m.practicalCredits}</span>
+                        <span class="stat-pill">${(m.lectureCredits + m.practicalCredits) * 15}h</span>
+                    </div>
                 `;
                 grid.appendChild(item);
             });
-        });
-        yearCard.appendChild(grid);
-        display.appendChild(yearCard);
-    });
-}
 
+            semStage.appendChild(grid);
+            semestersContainer.appendChild(semStage);
+        });
+
+        yearSection.appendChild(semestersContainer);
+        roadmap.appendChild(yearSection);
+    });
+
+    display.appendChild(roadmap);
+
+    // Animation Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.05 });
+
+    document.querySelectorAll('.roadmap-year-section').forEach(s => observer.observe(s));
+    
+    // Fallback: If elements are still not visible after 1s, force them (for some browser environments)
+    setTimeout(() => {
+        document.querySelectorAll('.roadmap-year-section').forEach(s => s.classList.add('visible'));
+    }, 1000);
+}
 function calculateTargets(module) {
     const lecture = (module.lectureCredits || 0) * 15;
     const self = (module.lectureCredits || 0) * 30;
@@ -513,7 +582,16 @@ function renderHourItem(moduleId, label, current, target, type, color) {
 
 window.updateHour = function(moduleId, type, delta) {
     if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0 };
-    appState.progress[moduleId][type] = Math.max(0, Math.min(100, (appState.progress[moduleId][type] || 0) + delta));
+    
+    // Find module to get target
+    const { course, year, semester } = appState;
+    const module = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
+    if (!module) return;
+    
+    const targets = calculateTargets(module);
+    const maxVal = targets[type];
+    
+    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, (appState.progress[moduleId][type] || 0) + delta));
     saveProgress();
     renderDashboard();
 };
@@ -528,20 +606,63 @@ window.adjustDuration = function(delta) {
 };
 
 function populateTimerSubjects() {
-    const select = document.getElementById('timer-subject');
+    const dropdownMenu = document.getElementById('module-options');
+    const dropdownSelected = document.querySelector('.dropdown-selected');
+    const timerSubjectInput = document.getElementById('timer-subject');
+    
     const { course, year, semester } = appState;
     if (!course) return;
     const modules = COURSE_DATA[course][year][semester];
     
-    const currentVal = select.value;
-    select.innerHTML = '<option value="" disabled selected>Select Module</option>';
+    dropdownMenu.innerHTML = '';
+    
+    // Add default option
+    const defaultOpt = document.createElement('div');
+    defaultOpt.className = 'dropdown-option';
+    defaultOpt.textContent = 'Select Module';
+    defaultOpt.onclick = () => selectDropdownOption('', 'Select Module');
+    dropdownMenu.appendChild(defaultOpt);
+
     modules.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.id;
-        opt.textContent = `${m.id} - ${m.name.substring(0, 20)}...`;
-        select.appendChild(opt);
+        const opt = document.createElement('div');
+        opt.className = 'dropdown-option';
+        opt.textContent = `${m.id} - ${m.name}`;
+        opt.onclick = () => selectDropdownOption(m.id, `${m.id} - ${m.name}`);
+        dropdownMenu.appendChild(opt);
     });
-    if (currentVal) select.value = currentVal;
+
+    // Toggle dropdown
+    const dropdown = document.getElementById('module-dropdown');
+    const trigger = dropdown.querySelector('.dropdown-trigger');
+    
+    // Remove old listeners to avoid duplicates
+    const newTrigger = trigger.cloneNode(true);
+    trigger.parentNode.replaceChild(newTrigger, trigger);
+    
+    newTrigger.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+    };
+
+    // Close on click outside
+    document.addEventListener('click', () => {
+        dropdown.classList.remove('active');
+    });
+}
+
+function selectDropdownOption(id, text) {
+    const dropdownSelected = document.querySelector('.dropdown-selected');
+    const timerSubjectInput = document.getElementById('timer-subject');
+    const dropdown = document.getElementById('module-dropdown');
+    
+    timerSubjectInput.value = id;
+    dropdownSelected.textContent = text.length > 30 ? text.substring(0, 27) + '...' : text;
+    dropdown.classList.remove('active');
+    
+    // Update active class on options
+    document.querySelectorAll('.dropdown-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.textContent === text);
+    });
 }
 
 function switchMode(mode) {
@@ -578,19 +699,15 @@ function startTimer() {
 
     document.getElementById('timer-status').textContent = currentMode === 'study' ? "Neural synthesis active..." : "Physiological recovery in progress...";
     
-    if (currentMode === 'study') {
-        startFallingObjects('leaf');
-    } else {
-        startFallingObjects('celestial');
-    }
-    
+    startFallingLeaves();
+
     timerInterval = setInterval(() => {
         timerSeconds--;
         updateTimerDisplay();
         if (timerSeconds <= 0) {
             clearInterval(timerInterval);
             timerInterval = null;
-            stopFallingObjects();
+            stopFallingLeaves();
             timerFinished();
         }
     }, 1000);
@@ -599,45 +716,49 @@ function startTimer() {
 function pauseTimer() { 
     clearInterval(timerInterval); 
     timerInterval = null; 
-    stopFallingObjects();
+    stopFallingLeaves();
     document.getElementById('timer-status').textContent = "Session interrupted.";
 }
 
-function startFallingObjects() {
+function resetTimer() {
+    pauseTimer();
+    stopFallingLeaves();
+    const mins = parseInt(document.getElementById('timer-duration').value) || 25;
+    timerSeconds = mins * 60;
+    totalTimerSeconds = mins * 60;
+    updateTimerDisplay();
+}
+
+function startFallingLeaves() {
     const container = document.getElementById('leaves-container');
     if (!container) return;
     
-    stopFallingObjects();
+    stopFallingLeaves();
+    
+    const colors = ['#e67e22', '#d35400', '#f39c12', '#c0392b'];
     
     leafInterval = setInterval(() => {
-        const obj = document.createElement('div');
-        obj.style.left = Math.random() * 100 + '%';
-        obj.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        const leaf = document.createElement('div');
+        leaf.className = 'leaf';
+        leaf.style.left = Math.random() * 100 + 'vw';
+        leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        leaf.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        leaf.style.opacity = Math.random();
+        leaf.style.width = (Math.random() * 15 + 10) + 'px';
+        leaf.style.height = leaf.style.width;
         
-        // Typical Autumn Leaf Shape and Color
-        obj.className = 'leaf shape-1'; // Fixed to shape-1 (typical leaf)
-        obj.style.background = `rgba(${200 + Math.random() * 55}, ${50 + Math.random() * 100}, 0, 0.8)`;
-        
-        container.appendChild(obj);
-        setTimeout(() => obj.remove(), 10000);
-    }, 300);
+        container.appendChild(leaf);
+        setTimeout(() => leaf.remove(), 10000);
+    }, 400);
 }
 
-function stopFallingObjects() { 
+function stopFallingLeaves() {
     if (leafInterval) {
         clearInterval(leafInterval);
         leafInterval = null;
     }
     const container = document.getElementById('leaves-container');
     if (container) container.innerHTML = '';
-}
-
-function resetTimer() {
-    pauseTimer();
-    const mins = parseInt(document.getElementById('timer-duration').value) || 25;
-    timerSeconds = mins * 60;
-    totalTimerSeconds = mins * 60;
-    updateTimerDisplay();
 }
 
 function updateTimerDisplay() {
@@ -662,21 +783,6 @@ function timerFinished() {
     }
     alert(currentMode === 'study' ? 'Deep Work Session Complete.' : 'Recovery Cycle Complete.');
     resetTimer();
-}
-
-function createParticles() {
-    const container = document.body;
-    for (let i = 0; i < 20; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.style.cssText = `position: fixed; width: ${Math.random() * 2 + 1}px; height: ${Math.random() * 2 + 1}px; background: var(--accent-primary); opacity: ${Math.random() * 0.3}; border-radius: 50%; top: ${Math.random() * 100}vh; left: ${Math.random() * 100}vw; pointer-events: none; z-index: -1; filter: blur(1px);`;
-        container.appendChild(p);
-        animateParticle(p);
-    }
-}
-
-function animateParticle(p) {
-    p.animate([{ transform: 'translate(0, 0)' }, { transform: `translate(${(Math.random() - 0.5) * 200}px, ${(Math.random() - 0.5) * 200}px)` }], { duration: Math.random() * 20000 + 10000, iterations: Infinity, direction: 'alternate', easing: 'linear' });
 }
 
 function saveProgress() { localStorage.setItem('ucsc_study_v3_synced', JSON.stringify(appState)); }
