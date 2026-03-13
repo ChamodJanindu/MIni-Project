@@ -3,117 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCSC Study Tracker</title>
+    <title>UCSC Study Tracker | High-Performance Academic Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1 id="logo">UCSC Study Tracker</h1>
+    <header id="app-header">
+        <div class="container header-content">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                </div>
+                <h1>UCSC Focus</h1>
+            </div>
             <nav id="main-nav" class="hidden">
-                <button id="view-curriculum-btn" class="btn btn-outline">View Curriculum</button>
-                <button id="reset-btn" class="btn btn-outline">Switch Semester</button>
+                <button class="nav-link" data-section="curriculum-section">Curriculum</button>
+                <button class="nav-link active" data-section="dashboard-section">Dashboard</button>
+                <button class="nav-link" data-section="timer-section">Study Timer</button>
+                <button class="nav-link" data-section="achievements-section">Achievements</button>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round">
+                            <svg class="sun" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                            <svg class="moon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </div>
+                    </label>
+                </div>
+                <button id="reset-btn" class="nav-btn-secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+                    Switch
+                </button>
             </nav>
         </div>
     </header>
 
-    <main class="container">
+    <main>
         <!-- Landing Section -->
-        <section id="landing-section" class="active">
-            <div class="hero">
-                <h2>Plan and track your semester study time.</h2>
-                <p>Designed for UCSC students to optimize their learning based on module credit values (LP).</p>
-                <div class="hero-btns">
-                    <button id="start-planning-btn" class="btn btn-primary btn-large">Start Planning</button>
-                    <button id="landing-curriculum-btn" class="btn btn-outline btn-large">Browse Curriculum</button>
+        <section id="landing-section" class="section active">
+            <div class="container hero-container animate-up">
+                <div class="hero-badge">Next-Gen Academic Planner</div>
+                <h2>Elevate your academic performance.</h2>
+                <p>A precision-engineered workspace designed for UCSC students to track modules, manage credits, and achieve deep focus.</p>
+                <div class="hero-actions">
+                    <button id="start-planning-btn" class="btn-primary btn-lg">Initialize Workspace</button>
+                    <p class="hero-subtext">Optimized for CS & IS programs. Local storage only.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Setup Section -->
+        <section id="setup-section" class="section">
+            <div class="container sm-container">
+                <div class="setup-card animate-up">
+                    <div class="card-header">
+                        <h3>Configure Environment</h3>
+                        <p>Select your program parameters to generate your semester roadmap.</p>
+                    </div>
+                    <form id="setup-form">
+                        <div class="form-group">
+                            <label>Specialization</label>
+                            <select id="course-select" required>
+                                <option value="" disabled selected>Select Program</option>
+                                <option value="CS">Computer Science</option>
+                                <option value="IS">Information Systems</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Academic Year</label>
+                                <select id="year-select" required>
+                                    <option value="" disabled selected>Year</option>
+                                    <option value="Year1">Year 01</option>
+                                    <option value="Year2">Year 02</option>
+                                    <option value="Year3">Year 03</option>
+                                    <option value="Year4">Year 04</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Semester</label>
+                                <select id="semester-select" required>
+                                    <option value="" disabled selected>Semester</option>
+                                    <option value="Semester1">Semester 01</option>
+                                    <option value="Semester2">Semester 02</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">Build Roadmap</button>
+                    </form>
                 </div>
             </div>
         </section>
 
         <!-- Curriculum Section -->
-        <section id="curriculum-section">
-            <div class="card">
-                <h3>UCSC Degree Curriculum</h3>
-                <div class="curriculum-filters">
-                    <button class="btn btn-small filter-btn active" data-course="CS">Computer Science</button>
-                    <button class="btn btn-small filter-btn" data-course="IS">Information Systems</button>
+        <section id="curriculum-section" class="section">
+            <div class="container">
+                <div class="setup-card animate-up" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h3>Academic Curriculum</h3>
+                            <p>Explore the full module map for UCSC programs.</p>
+                        </div>
+                        <div class="mode-switcher" style="margin-bottom: 0;">
+                            <button class="filter-btn active" data-course="CS">CS</button>
+                            <button class="filter-btn" data-course="IS">IS</button>
+                        </div>
+                    </div>
+                    <div id="curriculum-display" class="curriculum-grid">
+                        <!-- Curriculum data will be injected here -->
+                    </div>
                 </div>
-                <div id="curriculum-display" class="curriculum-grid">
-                    <!-- Curriculum data will be injected here -->
-                </div>
-                <button id="back-to-landing-btn" class="btn btn-outline full-width" style="margin-top: 20px;">Back</button>
-            </div>
-        </section>
-
-        <!-- Setup Section -->
-        <section id="setup-section">
-            <div class="card setup-card">
-                <h3>Semester Setup</h3>
-                <form id="setup-form">
-                    <div class="form-group">
-                        <label for="course-select">Course</label>
-                        <select id="course-select" required>
-                            <option value="" disabled selected>Select Course</option>
-                            <option value="CS">Computer Science (CS)</option>
-                            <option value="IS">Information Systems (IS)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="year-select">Year</label>
-                        <select id="year-select" required>
-                            <option value="" disabled selected>Select Year</option>
-                            <option value="Year1">Year 1</option>
-                            <option value="Year2">Year 2</option>
-                            <option value="Year3">Year 3</option>
-                            <option value="Year4">Year 4</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="semester-select">Semester</label>
-                        <select id="semester-select" required>
-                            <option value="" disabled selected>Select Semester</option>
-                            <option value="Semester1">Semester 1</option>
-                            <option value="Semester2">Semester 2</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary full-width">Generate Study Plan</button>
-                </form>
             </div>
         </section>
 
         <!-- Dashboard Section -->
-        <section id="dashboard-section">
-            <div id="overall-progress-container" class="card summary-card">
-                <h3>Overall Semester Progress</h3>
-                <div class="overall-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Total Hours Completed</span>
-                        <span id="total-hours-completed" class="stat-value">0</span>
+        <section id="dashboard-section" class="section">
+            <div class="container">
+                <div class="dashboard-grid">
+                    <div class="summary-card animate-up">
+                        <div class="summary-info">
+                            <div>
+                                <label>Semester Progress</label>
+                                <h2 id="overall-progress-percent">0%</h2>
+                            </div>
+                            <div class="summary-stats">
+                                <div class="stat">
+                                    <span id="total-hours-completed">0</span>
+                                    <label>Hours Invested</label>
+                                </div>
+                                <div class="stat" style="text-align: right;">
+                                    <span id="total-hours-remaining">0</span>
+                                    <label>Hours Remaining</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-track">
+                            <div id="overall-progress-bar" class="progress-fill"></div>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Target Hours</span>
-                        <span id="total-target-hours" class="stat-value">0</span>
+
+                    <div id="modules-container" class="modules-list">
+                        <!-- Module cards injected here -->
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Hours Remaining</span>
-                        <span id="total-hours-remaining" class="stat-value">0</span>
-                    </div>
-                </div>
-                <div class="progress-bar-container large">
-                    <div id="overall-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
-                    <span id="overall-progress-percent" class="progress-text">0%</span>
                 </div>
             </div>
+        </section>
 
-            <div id="modules-container" class="modules-grid">
-                <!-- Module cards will be injected here -->
+        <!-- Achievements Section -->
+        <section id="achievements-section" class="section">
+            <div class="container">
+                <div class="setup-card animate-up" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="card-header" style="margin-bottom: 3rem; text-align: center;">
+                        <h3>Academic Hall of Fame</h3>
+                        <p>Unlock prestigious badges as you conquer your UCSC roadmap.</p>
+                    </div>
+                    <div id="badges-container" class="badges-grid">
+                        <!-- Badges injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timer Section -->
+        <section id="timer-section" class="section">
+            <div id="leaves-container"></div>
+            <div class="timer-workspace">
+                <div class="timer-controls-panel animate-up">
+                    <div class="mode-switcher-container">
+                        <div class="mode-switcher">
+                            <button id="study-mode-btn" class="active" data-mode="study">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                Deep Study
+                            </button>
+                            <button id="rest-mode-btn" data-mode="rest">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6v6l4 2"></path></svg>
+                                Recovery
+                            </button>
+                            <div class="mode-indicator"></div>
+                        </div>
+                    </div>
+
+                    <div class="timer-visual">
+                        <div class="orb-container">
+                            <div id="orb-glow" class="orb-glow"></div>
+                            <svg viewBox="0 0 200 100" preserveAspectRatio="none" class="ecg-svg">
+                                <!-- ECG Track (Background) -->
+                                <path class="ecg-track" d="M0,50 L20,50 L25,40 L30,60 L35,50 L60,50 L65,20 L75,80 L80,50 L110,50 L115,40 L120,60 L125,50 L150,50 L155,20 L165,80 L170,50 L200,50" />
+                                <!-- ECG Progress (Foreground) -->
+                                <path id="timer-progress" class="ecg-fill" d="M0,50 L20,50 L25,40 L30,60 L35,50 L60,50 L65,20 L75,80 L80,50 L110,50 L115,40 L120,60 L125,50 L150,50 L155,20 L165,80 L170,50 L200,50" />
+                            </svg>
+                            <div id="timer-time" class="time-display">25:00</div>
+                        </div>
+                    </div>
+
+                    <div class="timer-controls-layout">
+                        <button id="timer-pause-btn" class="control-btn secondary-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        </button>
+                        <button id="timer-start-btn" class="control-btn main-play-btn">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </button>
+                        <button id="timer-reset-btn" class="control-btn secondary-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="timer-settings-row">
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                Target Module
+                            </label>
+                            <div class="custom-select-wrapper">
+                                <span class="timer-input-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                                </span>
+                                <select id="timer-subject" class="timer-input">
+                                    <option value="" disabled selected>Select Module</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                Session Length
+                            </label>
+                            <div class="custom-stepper">
+                                <button class="stepper-btn" onclick="adjustDuration(-5)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                                <div class="stepper-display">
+                                    <input type="number" id="timer-duration" value="25" min="1" max="120">
+                                    <span class="stepper-unit">min</span>
+                                </div>
+                                <button class="stepper-btn" onclick="adjustDuration(5)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="timer-status" class="timer-status-text">Ready for cognitive engagement?</p>
+                </div>
             </div>
         </section>
     </main>
 
-    <footer>
+    <footer class="app-footer">
         <div class="container">
-            <p>&copy; 2026 UCSC Study Tracker. Built for UCSC Students.</p>
+            <p>&copy; 2026 UCSC Study Tracker. High-Performance Academic Workspace.</p>
         </div>
     </footer>
 
