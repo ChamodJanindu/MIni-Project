@@ -198,7 +198,8 @@ let appState = {
     course: null,
     year: null,
     semester: null,
-    progress: {} 
+    progress: {},
+    papers: {} // { moduleId: [2019, 2021] }
 };
 
 let timerInterval = null;
@@ -213,7 +214,9 @@ const sections = {
     setup: document.getElementById('setup-section'),
     dashboard: document.getElementById('dashboard-section'),
     timer: document.getElementById('timer-section'),
-    curriculum: document.getElementById('curriculum-section')
+    curriculum: document.getElementById('curriculum-section'),
+    'past-papers': document.getElementById('past-papers-section'),
+    achievements: document.getElementById('achievements-section')
 };
 
 const nav = document.getElementById('main-nav');
@@ -306,6 +309,8 @@ function initEventListeners() {
             showSection(sectionId);
             if (sectionId === 'dashboard') renderDashboard();
             if (sectionId === 'timer') populateTimerSubjects();
+            if (sectionId === 'past-papers') renderPastPapers();
+            if (sectionId === 'achievements') renderAchievements();
         });
     });
 
@@ -337,7 +342,7 @@ function showSection(sectionId) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    const isApp = sectionId === 'dashboard' || sectionId === 'timer' || sectionId === 'curriculum' || sectionId === 'achievements';
+    const isApp = ['dashboard', 'timer', 'curriculum', 'achievements', 'past-papers'].includes(sectionId);
     nav.classList.toggle('hidden', !isApp);
 
     // Update Main Nav Active State & Indicator
@@ -359,10 +364,58 @@ function showSection(sectionId) {
         const activeCourse = document.querySelector('.filter-btn.active')?.dataset.course || 'CS';
         renderCurriculum(activeCourse);
     }
+    if (sectionId === 'past-papers') {
+        renderPastPapers();
+    }
     if (sectionId === 'achievements') {
         renderAchievements();
     }
 }
+
+function renderPastPapers() {
+    const container = document.getElementById('papers-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const { course, year, semester } = appState;
+    if (!course || !COURSE_DATA[course][year][semester]) return;
+
+    const modules = COURSE_DATA[course][year][semester];
+    const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+
+    modules.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'paper-card animate-up';
+        
+        let nodesHTML = '';
+        years.forEach(y => {
+            const isDone = appState.papers[m.id] && appState.papers[m.id].includes(y);
+            nodesHTML += `<div class="year-node ${isDone ? 'done' : ''}" onclick="togglePaper('${m.id}', ${y})">${y}</div>`;
+        });
+
+        card.innerHTML = `
+            <h4>${m.id} - ${m.name}</h4>
+            <div class="energy-circuit">
+                ${nodesHTML}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+window.togglePaper = function(moduleId, year) {
+    if (!appState.papers[moduleId]) appState.papers[moduleId] = [];
+    
+    const index = appState.papers[moduleId].indexOf(year);
+    if (index > -1) {
+        appState.papers[moduleId].splice(index, 1);
+    } else {
+        appState.papers[moduleId].push(year);
+    }
+    
+    saveProgress();
+    renderPastPapers();
+};
 
 function renderAchievements() {
     const container = document.getElementById('badges-container');
@@ -489,18 +542,11 @@ function renderCurriculum(course) {
     // Animation Observer
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
+            if (entry.isIntersecting) entry.target.classList.add('visible');
         });
-    }, { threshold: 0.05 });
+    }, { threshold: 0.1 });
 
     document.querySelectorAll('.roadmap-year-section').forEach(s => observer.observe(s));
-    
-    // Fallback: If elements are still not visible after 1s, force them (for some browser environments)
-    setTimeout(() => {
-        document.querySelectorAll('.roadmap-year-section').forEach(s => s.classList.add('visible'));
-    }, 1000);
 }
 function calculateTargets(module) {
     const lecture = (module.lectureCredits || 0) * 15;
@@ -555,11 +601,16 @@ function renderHourItem(moduleId, label, current, target, type, color) {
     if (target === 0) return '';
     const currentVal = current || 0;
     
-    // Generate World-Class Pill Segments
+    // Intelligent scaling for segments
+    const maxSegments = 20;
+    const segmentsToRender = Math.min(target, maxSegments);
+    const step = target / segmentsToRender;
+    
     let segmentsHTML = '';
-    for (let i = 0; i < target; i++) {
-        const isActive = i < currentVal;
-        const glowStyle = isActive ? `style="background: ${color}; --glow-color: ${color}; opacity: 1"` : '';
+    for (let i = 0; i < segmentsToRender; i++) {
+        // A segment is active if currentVal is greater than its starting hour threshold
+        const isActive = currentVal > (i * step);
+        const glowStyle = isActive ? `style="background: ${color}; box-shadow: 0 0 10px ${color}; opacity: 1"` : '';
         segmentsHTML += `<div class="energy-segment ${isActive ? 'active' : ''}" ${glowStyle}></div>`;
     }
 
@@ -775,18 +826,33 @@ function updateTimerDisplay() {
 }
 
 function timerFinished() {
-    const sub = document.getElementById('timer-subject').value;
-    if (currentMode === 'study' && appState.progress[sub]) {
+    const subId = document.getElementById('timer-subject').value;
+    if (currentMode === 'study' && subId && appState.progress[subId]) {
         const hrs = parseInt(document.getElementById('timer-duration').value) / 60;
-        appState.progress[sub].self += hrs;
-        saveProgress();
+        
+        // Find module to get target cap
+        const { course, year, semester } = appState;
+        const module = COURSE_DATA[course][year][semester].find(m => m.id === subId);
+        
+        if (module) {
+            const targets = calculateTargets(module);
+            // Apply cap: Current + New, but not exceeding target
+            appState.progress[subId].self = Math.min(targets.self, (appState.progress[subId].self || 0) + hrs);
+            saveProgress();
+        }
     }
-    alert(currentMode === 'study' ? 'Deep Work Session Complete.' : 'Recovery Cycle Complete.');
+    alert(currentMode === 'study' ? 'Deep Work Session Complete. Progress synced to Dashboard.' : 'Recovery Cycle Complete.');
     resetTimer();
 }
 
 function saveProgress() { localStorage.setItem('ucsc_study_v3_synced', JSON.stringify(appState)); }
 function loadProgress() {
     const s = localStorage.getItem('ucsc_study_v3_synced');
-    if (s) try { appState = JSON.parse(s); } catch (e) {}
+    if (s) {
+        try { 
+            appState = JSON.parse(s); 
+            // Migration: Ensure papers object exists for old saves
+            if (!appState.papers) appState.papers = {};
+        } catch (e) {}
+    }
 }
