@@ -490,8 +490,9 @@ function renderCurriculum(course) {
 
         const yearHeader = document.createElement('div');
         yearHeader.className = 'roadmap-year-header';
+        const yearKey = year.replace('Year', 'Y');
         yearHeader.innerHTML = `
-            <div class="year-node"><span>${year.replace('Year', 'Y')}</span></div>
+            <div class="year-node year-node-${yearKey.toLowerCase()}"><span>${yearKey}</span></div>
             <h3 class="year-title">${year.replace('Year', 'Year ')}</h3>
         `;
         yearSection.appendChild(yearHeader);
@@ -856,3 +857,16 @@ function loadProgress() {
         } catch (e) {}
     }
 }
+
+// World-Class Mouse Tracking Engine for Roadmap Cards
+document.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.roadmap-card');
+    cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', ${x}px);
+        card.style.setProperty('--mouse-y', ${y}px);
+    });
+});
+
