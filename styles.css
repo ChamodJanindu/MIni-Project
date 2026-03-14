@@ -1388,3 +1388,224 @@ select.timer-input:focus {
     .form-row { grid-template-columns: 1fr; }
     .timer-controls-panel { padding: 2rem; }
 }
+
+/* TITAN CYBER-LINK ROADMAP UI (FINAL FORM) */
+.curriculum-roadmap {
+    position: relative !important;
+    padding: 12rem 0 !important;
+    perspective: 4000px !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    transform-style: preserve-3d !important;
+}
+
+/* Hyper-Glowing Neural Core Path */
+.curriculum-roadmap::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 50px !important;
+    width: 6px !important;
+    height: 100% !important;
+    background: linear-gradient(180deg, 
+        transparent 0%, 
+        #00d2ff 15%, 
+        #bc8cff 35%, 
+        #00ffa3 65%, 
+        #ff4d4d 85%, 
+        transparent 100%) !important;
+    box-shadow: 
+        0 0 50px rgba(0, 210, 255, 0.5),
+        0 0 100px rgba(188, 140, 255, 0.3) !important;
+    z-index: 1 !important;
+    border-radius: 10px !important;
+}
+
+.roadmap-year-section {
+    position: relative !important;
+    margin-bottom: 20rem !important;
+    opacity: 0 !important;
+    transform: rotateX(-30deg) translateZ(-500px) translateY(100px) !important;
+    transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transform-style: preserve-3d !important;
+}
+
+.roadmap-year-section.visible {
+    opacity: 1 !important;
+    transform: rotateX(0) translateZ(0) translateY(0) !important;
+}
+
+.roadmap-year-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5rem !important;
+    margin-bottom: 8rem !important;
+    position: relative !important;
+    z-index: 50 !important;
+    transform-style: preserve-3d !important;
+}
+
+/* THE TITAN DIAMOND CORE */
+.year-node {
+    width: 150px !important;
+    height: 150px !important;
+    background: #05070a !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 100 !important;
+    transform: rotate(45deg) !important;
+    transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    position: relative !important;
+    cursor: pointer !important;
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Individual Color Mapping */
+.year-node-y1 { --y-color: #00d2ff; --y-rgb: 0, 210, 255; }
+.year-node-y2 { --y-color: #bc8cff; --y-rgb: 188, 140, 255; }
+.year-node-y3 { --y-color: #00ffa3; --y-rgb: 0, 255, 163; }
+.year-node-y4 { --y-color: #ff4d4d; --y-rgb: 255, 77, 77; }
+
+/* Triple Orbiting Rings */
+.year-node::before, .year-node::after, .year-node .ring-3 {
+    content: '' !important;
+    position: absolute !important;
+    border: 2px solid var(--y-color) !important;
+    border-radius: 50px !important;
+    opacity: 0.2 !important;
+    pointer-events: none !important;
+}
+
+.year-node::before { inset: -15px !important; animation: spin 15s linear infinite !important; border-style: dashed !important; }
+.year-node::after { inset: -30px !important; animation: spin 25s linear infinite reverse !important; border-width: 1px !important; opacity: 0.1 !important; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.year-node span {
+    transform: rotate(-45deg) !important;
+    font-weight: 950 !important;
+    font-size: 2.8rem !important;
+    color: #fff !important;
+    text-shadow: 0 0 40px var(--y-color) !important;
+    z-index: 101 !important;
+    letter-spacing: -4px !important;
+}
+
+/* TITAN HOVER PROTOCOL */
+.year-node:hover {
+    transform: rotate(225deg) scale(1.3) translateZ(100px) !important;
+    border-color: var(--y-color) !important;
+    background: rgba(var(--y-rgb), 0.1) !important;
+    box-shadow: 0 0 80px var(--y-color) !important;
+}
+
+.year-node:hover span {
+    transform: rotate(-225deg) scale(0.7) !important;
+}
+
+/* MONOLITH YEAR TITLES */
+.year-title {
+    font-size: 10rem !important;
+    font-weight: 1000 !important;
+    letter-spacing: -0.15em !important;
+    line-height: 0.8 !important;
+    color: transparent !important;
+    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.03) !important;
+    background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0) 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.roadmap-year-header:hover .year-title {
+    -webkit-text-stroke: 2px var(--y-color) !important;
+    transform: translateX(60px) translateZ(200px) rotateY(-10deg) !important;
+    letter-spacing: -0.1em !important;
+    opacity: 1 !important;
+}
+
+/* SEMESTER FLOW */
+.roadmap-semesters {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15rem !important;
+    padding-left: 200px !important;
+    transform-style: preserve-3d !important;
+}
+
+.semester-badge {
+    background: #000 !important;
+    color: #fff !important;
+    padding: 1.5rem 4rem !important;
+    border-radius: 20px !important;
+    font-size: 1.25rem !important;
+    font-weight: 1000 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5em !important;
+    border: 3px solid var(--y-color) !important;
+    box-shadow: 0 0 50px rgba(var(--y-rgb), 0.4) !important;
+    position: relative !important;
+}
+
+/* ROADMAP CARDS (TITAN CLASS) */
+.roadmap-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)) !important;
+    gap: 4rem !important;
+}
+
+.roadmap-card {
+    background: rgba(255, 255, 255, 0.01) !important;
+    backdrop-filter: blur(50px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 50px !important;
+    padding: 4rem !important;
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    position: relative !important;
+    transform-style: preserve-3d !important;
+}
+
+.roadmap-card:hover {
+    transform: translateZ(100px) translateY(-30px) rotateX(5deg) rotateY(5deg) !important;
+    border-color: var(--y-color) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    box-shadow: 0 60px 120px rgba(0, 0, 0, 0.7) !important;
+}
+
+.roadmap-card .mod-id {
+    color: var(--y-color) !important;
+    font-weight: 1000 !important;
+    font-size: 1.2rem !important;
+    letter-spacing: 0.2em !important;
+    margin-bottom: 2rem !important;
+    display: block !important;
+}
+
+.roadmap-card .mod-name {
+    font-size: 2rem !important;
+    font-weight: 1000 !important;
+    color: #fff !important;
+    line-height: 1.1 !important;
+}
+
+@media (max-width: 1200px) {
+    .year-title { font-size: 6rem !important; }
+    .roadmap-semesters { padding-left: 100px !important; }
+    .roadmap-grid { grid-template-columns: 1fr !important; }
+}
+
+@keyframes falling {
+    0% { 
+        transform: translate(0, -50px) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { 
+        transform: translate(var(--drift), 100vh) rotate(var(--rotation)); 
+        opacity: 0; 
+    }
+}
