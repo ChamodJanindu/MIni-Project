@@ -387,16 +387,24 @@ function renderPastPapers() {
         const card = document.createElement('div');
         card.className = 'paper-card animate-up';
         
-        let nodesHTML = '';
-        years.forEach(y => {
+        let branchHTML = '';
+        years.forEach((y, index) => {
             const isDone = appState.papers[m.id] && appState.papers[m.id].includes(y);
-            nodesHTML += `<div class="year-node ${isDone ? 'done' : ''}" onclick="togglePaper('${m.id}', ${y})">${y}</div>`;
+            const side = index % 2 === 0 ? 'up' : 'down';
+            branchHTML += `
+                <div class="branch-item ${side} ${isDone ? 'done' : ''}">
+                    <div class="branch-node ${isDone ? 'done' : ''}" onclick="togglePaper('${m.id}', ${y})">
+                        <div class="year-val">${y}</div>
+                        <div class="status-label">${isDone ? 'Mastered' : 'Pending'}</div>
+                    </div>
+                </div>
+            `;
         });
 
         card.innerHTML = `
             <h4>${m.id} - ${m.name}</h4>
-            <div class="energy-circuit">
-                ${nodesHTML}
+            <div class="branch-container">
+                ${branchHTML}
             </div>
         `;
         container.appendChild(card);
@@ -692,6 +700,10 @@ function populateTimerSubjects() {
     trigger.parentNode.replaceChild(newTrigger, trigger);
     
     newTrigger.onclick = (e) => {
+        if (timerInterval) {
+            alert("Please pause or reset the timer before changing the module.");
+            return;
+        }
         e.stopPropagation();
         dropdown.classList.toggle('active');
     };
@@ -703,6 +715,7 @@ function populateTimerSubjects() {
 }
 
 function selectDropdownOption(id, text) {
+    if (timerInterval) return;
     const dropdownSelected = document.querySelector('.dropdown-selected');
     const timerSubjectInput = document.getElementById('timer-subject');
     const dropdown = document.getElementById('module-dropdown');
