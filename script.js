@@ -1,4 +1,4 @@
-// UCSC Module Data
+// UCSC Module Data (Preserved from origin/main)
 const COURSE_DATA = {
   "CS": {
     "Year1": {
@@ -198,26 +198,38 @@ let appState = {
     course: null,
     year: null,
     semester: null,
-    progress: {} // { moduleId: { lecture: 0, self: 0, other: 0, practical: 0 } }
+    progress: {},
+    papers: {} // { moduleId: [2019, 2021] }
 };
+
+let timerInterval = null;
+let leafInterval = null;
+let timerSeconds = 25 * 60;
+let totalTimerSeconds = 25 * 60;
+let currentMode = 'study';
 
 // DOM Elements
 const sections = {
     landing: document.getElementById('landing-section'),
     setup: document.getElementById('setup-section'),
     dashboard: document.getElementById('dashboard-section'),
-    curriculum: document.getElementById('curriculum-section')
+    timer: document.getElementById('timer-section'),
+    curriculum: document.getElementById('curriculum-section'),
+    'past-papers': document.getElementById('past-papers-section'),
+    achievements: document.getElementById('achievements-section')
 };
 
 const nav = document.getElementById('main-nav');
 const setupForm = document.getElementById('setup-form');
 const modulesContainer = document.getElementById('modules-container');
-const curriculumDisplay = document.getElementById('curriculum-display');
+const themeToggle = document.getElementById('checkbox');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     loadProgress();
     initEventListeners();
+    // createParticles();
+    initTheme();
     
     if (appState.course && appState.year && appState.semester) {
         showSection('dashboard');
@@ -227,34 +239,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function initTheme() {
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (currentTheme === 'light') {
+        themeToggle.checked = true;
+    }
+}
+
 function initEventListeners() {
-    document.getElementById('start-planning-btn').addEventListener('click', () => {
-        showSection('setup');
-    });
+    document.getElementById('start-planning-btn').addEventListener('click', () => showSection('setup'));
 
-    document.getElementById('landing-curriculum-btn').addEventListener('click', () => {
-        showSection('curriculum');
-        renderCurriculum('CS');
-    });
-
-    document.getElementById('view-curriculum-btn').addEventListener('click', () => {
-        showSection('curriculum');
-        renderCurriculum(appState.course || 'CS');
-    });
-
-    document.getElementById('back-to-landing-btn').addEventListener('click', () => {
-        if (appState.course && appState.year && appState.semester) {
-            showSection('dashboard');
+    themeToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
         } else {
-            showSection('landing');
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
         }
     });
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            const course = e.target.dataset.course;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            renderCurriculum(e.target.dataset.course);
+            
+            // Move indicator
+            const indicator = document.getElementById('course-indicator');
+            if (indicator) {
+                indicator.style.left = course === 'CS' ? '6px' : 'calc(50% + 2px)';
+            }
+
+            renderCurriculum(course);
         });
     });
 
@@ -276,7 +294,7 @@ function initEventListeners() {
         const modules = COURSE_DATA[course][year][semester];
         modules.forEach(m => {
             if (!appState.progress[m.id]) {
-                appState.progress[m.id] = { lecture: 0, self: 0, other: 0, practical: 0 };
+                appState.progress[m.id] = { lecture: 0, self: 0, practical: 0 };
             }
         });
 
@@ -285,164 +303,571 @@ function initEventListeners() {
         showSection('dashboard');
     });
 
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const sectionId = link.getAttribute('data-section').replace('-section', '');
+            showSection(sectionId);
+            if (sectionId === 'dashboard') renderDashboard();
+            if (sectionId === 'timer') populateTimerSubjects();
+            if (sectionId === 'past-papers') renderPastPapers();
+            if (sectionId === 'achievements') renderAchievements();
+        });
+    });
+
     document.getElementById('reset-btn').addEventListener('click', () => {
-        if (confirm('Switch semesters? Current progress is saved.')) {
+        if (confirm('Reconfigure workspace? Current progress will be preserved.')) {
             showSection('setup');
         }
+    });
+
+    document.getElementById('study-mode-btn').addEventListener('click', () => switchMode('study'));
+    document.getElementById('rest-mode-btn').addEventListener('click', () => switchMode('rest'));
+    document.getElementById('timer-start-btn').addEventListener('click', startTimer);
+    document.getElementById('timer-pause-btn').addEventListener('click', pauseTimer);
+    document.getElementById('timer-reset-btn').addEventListener('click', resetTimer);
+    
+    document.getElementById('timer-duration').addEventListener('change', (e) => {
+        const mins = Math.max(1, parseInt(e.target.value) || 25);
+        timerSeconds = mins * 60;
+        totalTimerSeconds = mins * 60;
+        updateTimerDisplay();
     });
 }
 
 function showSection(sectionId) {
-    Object.keys(sections).forEach(key => {
-        sections[key].classList.remove('active');
-    });
-    sections[sectionId].classList.add('active');
+    Object.values(sections).forEach(s => s?.classList.remove('active'));
+    const target = sections[sectionId];
+    if (target) {
+        target.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    const isApp = ['dashboard', 'timer', 'curriculum', 'achievements', 'past-papers'].includes(sectionId);
+    nav.classList.toggle('hidden', !isApp);
+
+    // Update Main Nav Active State & Indicator
+    const links = document.querySelectorAll('.nav-link');
+    const indicator = document.querySelector('.main-nav-indicator');
     
-    // Header nav visibility
-    if (sectionId === 'dashboard') {
-        nav.classList.remove('hidden');
-    } else if (sectionId === 'curriculum') {
-        nav.classList.remove('hidden');
-        document.getElementById('reset-btn').style.display = appState.course ? 'inline-block' : 'none';
-    } else {
-        nav.classList.add('hidden');
+    links.forEach(link => {
+        const linkSection = link.getAttribute('data-section').replace('-section', '');
+        const isActive = linkSection === sectionId;
+        link.classList.toggle('active', isActive);
+        
+        if (isActive && indicator) {
+            indicator.style.left = `${link.offsetLeft}px`;
+            indicator.style.width = `${link.offsetWidth}px`;
+        }
+    });
+
+    if (sectionId === 'curriculum') {
+        const activeCourse = document.querySelector('.filter-btn.active')?.dataset.course || 'CS';
+        renderCurriculum(activeCourse);
+    }
+    if (sectionId === 'past-papers') {
+        renderPastPapers();
+    }
+    if (sectionId === 'achievements') {
+        renderAchievements();
     }
 }
 
-function calculateTargets(module) {
-    // 50 total hours per lecture credit
-    const lectureHours = module.lectureCredits * 15;
-    const selfHours = module.lectureCredits * 30;
-    const otherHours = module.lectureCredits * 5;
-    // 45 hours per practical credit (approx. 3 hours per week for 15 weeks)
-    const practicalHours = module.practicalCredits * 45;
+function renderPastPapers() {
+    const container = document.getElementById('papers-container');
+    if (!container) return;
+    container.innerHTML = '';
 
-    return {
-        total: lectureHours + selfHours + otherHours + practicalHours,
-        lecture: lectureHours,
-        self: selfHours,
-        other: otherHours,
-        practical: practicalHours
-    };
+    const { course, year, semester } = appState;
+    if (!course || !COURSE_DATA[course][year][semester]) return;
+
+    const modules = COURSE_DATA[course][year][semester];
+    const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+
+    modules.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'paper-card animate-up';
+        
+        let nodesHTML = '';
+        years.forEach(y => {
+            const isDone = appState.papers[m.id] && appState.papers[m.id].includes(y);
+            nodesHTML += `<div class="year-node ${isDone ? 'done' : ''}" onclick="togglePaper('${m.id}', ${y})">${y}</div>`;
+        });
+
+        card.innerHTML = `
+            <h4>${m.id} - ${m.name}</h4>
+            <div class="energy-circuit">
+                ${nodesHTML}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+window.togglePaper = function(moduleId, year) {
+    if (!appState.papers[moduleId]) appState.papers[moduleId] = [];
+    
+    const index = appState.papers[moduleId].indexOf(year);
+    if (index > -1) {
+        appState.papers[moduleId].splice(index, 1);
+    } else {
+        appState.papers[moduleId].push(year);
+    }
+    
+    saveProgress();
+    renderPastPapers();
+};
+
+function renderAchievements() {
+    const container = document.getElementById('badges-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const { course, year, semester } = appState;
+    if (!course) return;
+
+    // 1. Bronze Badges (Task Completion within Module)
+    const modules = COURSE_DATA[course][year][semester];
+    modules.forEach(m => {
+        const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0 };
+        const targets = calculateTargets(m);
+        
+        if (p.lecture >= targets.lecture && targets.lecture > 0) createBadge(container, 'bronze', `${m.id} Lecture`, 'Lecture hours complete');
+        if (p.practical >= targets.practical && targets.practical > 0) createBadge(container, 'bronze', `${m.id} Practical`, 'Practical hours complete');
+        if (p.self >= targets.self && targets.self > 0) createBadge(container, 'bronze', `${m.id} Self-Study`, 'Deep work target met');
+
+        // 2. Silver Badges (100% Module Completion)
+        const done = p.lecture + p.practical + p.self;
+        if (done >= targets.total && targets.total > 0) {
+            createBadge(container, 'silver', `${m.id} Master`, `${m.name} 100% complete`);
+        }
+    });
+
+    // 3. Golden Badge (Semester Completion)
+    let semesterComplete = true;
+    modules.forEach(m => {
+        const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0 };
+        const targets = calculateTargets(m);
+        if ((p.lecture + p.practical + p.self) < targets.total) semesterComplete = false;
+    });
+    if (semesterComplete) createBadge(container, 'gold', `${semester} Hero`, `All modules in ${semester} complete`);
+
+    // 4. Platinum Badge (Year Completion - Simplified for current semester context)
+    // In a full app, we would check all semesters in the year. 
+    // For this prototype, we'll award it if the current semester is the final one and complete.
+    if (semesterComplete && semester === 'Semester2') {
+        createBadge(container, 'platinum', `${year} Legend`, `Academic excellence in ${year}`);
+    }
+}
+
+function createBadge(container, level, name, desc) {
+    const card = document.createElement('div');
+    card.className = `badge-card badge-${level} active animate-up`;
+    card.innerHTML = `
+        <div class="badge-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 15l-2 5 2-1 2 1-2-5z"/><circle cx="12" cy="9" r="7"/>
+            </svg>
+        </div>
+        <div class="badge-name">${name}</div>
+        <div class="badge-desc">${desc}</div>
+    `;
+    container.appendChild(card);
+}
+
+function renderCurriculum(course) {
+    const display = document.getElementById('curriculum-display');
+    if (!display || !COURSE_DATA[course]) return;
+    display.innerHTML = '';
+
+    const roadmap = document.createElement('div');
+    roadmap.className = 'curriculum-roadmap';
+
+    const data = COURSE_DATA[course];
+    Object.keys(data).forEach((year, yIdx) => {
+        const yearSection = document.createElement('div');
+        yearSection.className = 'roadmap-year-section';
+        yearSection.style.transitionDelay = `${yIdx * 0.2}s`;
+
+        const yearHeader = document.createElement('div');
+        yearHeader.className = 'roadmap-year-header';
+        const yearKey = year.replace('Year', 'Y');
+        yearHeader.innerHTML = `
+            <div class="year-node year-node-${yearKey.toLowerCase()}"><span>${yearKey}</span></div>
+            <h3 class="year-title">${year.replace('Year', 'Year ')}</h3>
+        `;
+        yearSection.appendChild(yearHeader);
+
+        const semestersContainer = document.createElement('div');
+        semestersContainer.className = 'roadmap-semesters';
+
+        Object.keys(data[year]).forEach(semester => {
+            const semStage = document.createElement('div');
+            semStage.className = 'semester-stage';
+
+            const semTitle = document.createElement('div');
+            semTitle.className = 'semester-title-row';
+            semTitle.innerHTML = `
+                <span class="semester-badge">${semester.replace('Semester', 'Semester ')}</span>
+                <div style="height: 1px; flex: 1; background: var(--border-subtle); opacity: 0.5;"></div>
+            `;
+            semStage.appendChild(semTitle);
+
+            const grid = document.createElement('div');
+            grid.className = 'roadmap-grid';
+
+            data[year][semester].forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'roadmap-card';
+                item.innerHTML = `
+                    <span class="mod-id">${m.id}</span>
+                    <div class="mod-name">${m.name}</div>
+                    <div class="mod-stats">
+                        <span class="stat-pill">L: ${m.lectureCredits}</span>
+                        <span class="stat-pill">P: ${m.practicalCredits}</span>
+                        <span class="stat-pill">${(m.lectureCredits + m.practicalCredits) * 15}h</span>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+
+            semStage.appendChild(grid);
+            semestersContainer.appendChild(semStage);
+        });
+
+        yearSection.appendChild(semestersContainer);
+        roadmap.appendChild(yearSection);
+    });
+
+    display.appendChild(roadmap);
+
+    // Animation Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.roadmap-year-section').forEach(s => observer.observe(s));
+}
+function calculateTargets(module) {
+    const lecture = (module.lectureCredits || 0) * 15;
+    const self = (module.lectureCredits || 0) * 30;
+    const practical = (module.practicalCredits || 0) * 45; 
+    return { lecture, self, practical, total: lecture + self + practical };
 }
 
 function renderDashboard() {
     const { course, year, semester } = appState;
+    if (!course || !COURSE_DATA[course][year][semester]) return;
+
     const modules = COURSE_DATA[course][year][semester];
     modulesContainer.innerHTML = '';
     
-    let totalCompleted = 0;
+    let totalDone = 0;
     let totalTarget = 0;
 
-    modules.forEach(module => {
-        const targets = calculateTargets(module);
-        if (!appState.progress[module.id]) appState.progress[module.id] = { lecture: 0, self: 0, other: 0, practical: 0 };
-        const progress = appState.progress[module.id];
+    modules.forEach(m => {
+        const targets = calculateTargets(m);
+        const progress = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0 };
+        const done = (progress.lecture || 0) + (progress.self || 0) + (progress.practical || 0);
         
-        const moduleCompleted = (progress.lecture || 0) + (progress.self || 0) + (progress.other || 0) + (progress.practical || 0);
-        totalCompleted += moduleCompleted;
+        totalDone += done;
         totalTarget += targets.total;
 
         const card = document.createElement('div');
-        card.className = 'card module-card';
+        card.className = 'module-card animate-up';
         card.innerHTML = `
-            <h4>${module.id}: ${module.name}</h4>
-            <span class="lp-badge">Credits - L: ${module.lectureCredits} P: ${module.practicalCredits}</span>
-            
-            ${targets.lecture > 0 ? renderProgressBar('Lectures', progress.lecture, targets.lecture, module.id, 'lecture') : ''}
-            ${targets.lecture > 0 ? renderProgressBar('Self Study', progress.self, targets.self, module.id, 'self') : ''}
-            ${targets.lecture > 0 ? renderProgressBar('Other', progress.other, targets.other, module.id, 'other') : ''}
-            ${targets.practical > 0 ? renderProgressBar('Practical', progress.practical, targets.practical, module.id, 'practical') : ''}
-            
-            <div class="module-footer">
-                <small>${moduleCompleted} / ${targets.total} hrs (${targets.total > 0 ? Math.round((moduleCompleted / targets.total) * 100) : 0}%)</small>
+            <div class="module-meta">
+                <span>${m.id}</span>
+                <span>${targets.total > 0 ? Math.min(100, Math.round((done / targets.total) * 100)) : 0}%</span>
+            </div>
+            <h4>${m.name}</h4>
+            <div class="module-hour-stats">
+                ${renderHourItem(m.id, 'Lecture', progress.lecture, targets.lecture, 'lecture', 'var(--accent-primary)')}
+                ${renderHourItem(m.id, 'Practical', progress.practical, targets.practical, 'practical', 'var(--accent-success)')}
+                ${renderHourItem(m.id, 'Self Study', progress.self, targets.self, 'self', 'var(--accent-secondary)')}
             </div>
         `;
         modulesContainer.appendChild(card);
     });
 
-    updateOverallProgress(totalCompleted, totalTarget);
+    const overallPercent = totalTarget > 0 ? Math.min(100, Math.round((totalDone / totalTarget) * 100)) : 0;
+    document.getElementById('overall-progress-percent').textContent = `${overallPercent}%`;
+    document.getElementById('overall-progress-bar').style.width = `${overallPercent}%`;
+    document.getElementById('total-hours-completed').textContent = Math.round(totalDone);
+    document.getElementById('total-hours-remaining').textContent = Math.round(Math.max(0, totalTarget - totalDone));
 }
 
-function renderProgressBar(label, current, target, moduleId, type) {
+function renderHourItem(moduleId, label, current, target, type, color) {
     if (target === 0) return '';
-    const percent = Math.min(Math.round((current / target) * 100), 100);
+    const currentVal = current || 0;
+    
+    // Intelligent scaling for segments
+    const maxSegments = 20;
+    const segmentsToRender = Math.min(target, maxSegments);
+    const step = target / segmentsToRender;
+    
+    let segmentsHTML = '';
+    for (let i = 0; i < segmentsToRender; i++) {
+        // A segment is active if currentVal is greater than its starting hour threshold
+        const isActive = currentVal > (i * step);
+        const glowStyle = isActive ? `style="background: ${color}; box-shadow: 0 0 10px ${color}; opacity: 1"` : '';
+        segmentsHTML += `<div class="energy-segment ${isActive ? 'active' : ''}" ${glowStyle}></div>`;
+    }
+
     return `
-        <div class="progress-group">
-            <div class="progress-header"><span>${label}</span><span>${current}/${target}h</span></div>
-            <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${percent}%"></div></div>
-            <div class="controls">
-                <button class="btn btn-small btn-primary" onclick="updateHour('${moduleId}', '${type}', 1)">+1</button>
-                <button class="btn btn-small btn-outline" style="color:#333;border-color:#ccc" onclick="updateHour('${moduleId}', '${type}', -1)">-1</button>
+        <div class="hour-item">
+            <div class="hour-label-row">
+                <span>${label}</span>
+                <span>${currentVal.toFixed(1)} / ${target}h</span>
+            </div>
+            <div class="energy-bar-container">
+                ${segmentsHTML}
+            </div>
+            <div class="module-btn-row" style="margin-top: 0.5rem">
+                <button class="btn-small-square" onclick="updateHour('${moduleId}', '${type}', -0.5)">-</button>
+                <button class="btn-small-square" onclick="updateHour('${moduleId}', '${type}', 0.5)">+</button>
             </div>
         </div>
     `;
 }
 
-function renderCurriculum(course) {
-    curriculumDisplay.innerHTML = '';
-    const data = COURSE_DATA[course];
+window.updateHour = function(moduleId, type, delta) {
+    if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0 };
     
-    Object.keys(data).forEach(year => {
-        const yearDiv = document.createElement('div');
-        yearDiv.className = 'curriculum-year';
-        yearDiv.innerHTML = `<h4>${year.replace('Year', 'Year ')}</h4>`;
-        
-        Object.keys(data[year]).forEach(semester => {
-            const semDiv = document.createElement('div');
-            semDiv.className = 'curriculum-semester';
-            semDiv.innerHTML = `<h5>${semester.replace('Semester', 'Semester ')}</h5>`;
-            
-            const table = document.createElement('table');
-            table.className = 'curriculum-table';
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>L</th>
-                        <th>P</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data[year][semester].map(m => `
-                        <tr>
-                            <td>${m.id}</td>
-                            <td>${m.name}</td>
-                            <td>${m.lectureCredits}</td>
-                            <td>${m.practicalCredits}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            `;
-            semDiv.appendChild(table);
-            yearDiv.appendChild(semDiv);
-        });
-        curriculumDisplay.appendChild(yearDiv);
+    // Find module to get target
+    const { course, year, semester } = appState;
+    const module = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
+    if (!module) return;
+    
+    const targets = calculateTargets(module);
+    const maxVal = targets[type];
+    
+    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, (appState.progress[moduleId][type] || 0) + delta));
+    saveProgress();
+    renderDashboard();
+};
+
+window.adjustDuration = function(delta) {
+    const input = document.getElementById('timer-duration');
+    const newVal = Math.max(1, Math.min(120, (parseInt(input.value) || 25) + delta));
+    input.value = newVal;
+    // Trigger the change event manually to update the timer
+    const event = new Event('change');
+    input.dispatchEvent(event);
+};
+
+function populateTimerSubjects() {
+    const dropdownMenu = document.getElementById('module-options');
+    const dropdownSelected = document.querySelector('.dropdown-selected');
+    const timerSubjectInput = document.getElementById('timer-subject');
+    
+    const { course, year, semester } = appState;
+    if (!course) return;
+    const modules = COURSE_DATA[course][year][semester];
+    
+    dropdownMenu.innerHTML = '';
+    
+    // Add default option
+    const defaultOpt = document.createElement('div');
+    defaultOpt.className = 'dropdown-option';
+    defaultOpt.textContent = 'Select Module';
+    defaultOpt.onclick = () => selectDropdownOption('', 'Select Module');
+    dropdownMenu.appendChild(defaultOpt);
+
+    modules.forEach(m => {
+        const opt = document.createElement('div');
+        opt.className = 'dropdown-option';
+        opt.textContent = `${m.id} - ${m.name}`;
+        opt.onclick = () => selectDropdownOption(m.id, `${m.id} - ${m.name}`);
+        dropdownMenu.appendChild(opt);
+    });
+
+    // Toggle dropdown
+    const dropdown = document.getElementById('module-dropdown');
+    const trigger = dropdown.querySelector('.dropdown-trigger');
+    
+    // Remove old listeners to avoid duplicates
+    const newTrigger = trigger.cloneNode(true);
+    trigger.parentNode.replaceChild(newTrigger, trigger);
+    
+    newTrigger.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+    };
+
+    // Close on click outside
+    document.addEventListener('click', () => {
+        dropdown.classList.remove('active');
     });
 }
 
-window.updateHour = function(moduleId, type, delta) {
-    if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, other: 0, practical: 0 };
-    const newValue = (appState.progress[moduleId][type] || 0) + delta;
-    if (newValue >= 0) {
-        appState.progress[moduleId][type] = newValue;
-        saveProgress();
-        renderDashboard();
+function selectDropdownOption(id, text) {
+    const dropdownSelected = document.querySelector('.dropdown-selected');
+    const timerSubjectInput = document.getElementById('timer-subject');
+    const dropdown = document.getElementById('module-dropdown');
+    
+    timerSubjectInput.value = id;
+    dropdownSelected.textContent = text.length > 30 ? text.substring(0, 27) + '...' : text;
+    dropdown.classList.remove('active');
+    
+    // Update active class on options
+    document.querySelectorAll('.dropdown-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.textContent === text);
+    });
+}
+
+function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('study-mode-btn').classList.toggle('active', mode === 'study');
+    document.getElementById('rest-mode-btn').classList.toggle('active', mode === 'rest');
+    
+    // Slide World-Class Indicator
+    const indicator = document.querySelector('.mode-indicator');
+    if (indicator) {
+        indicator.style.left = mode === 'study' ? '6px' : 'calc(50% + 2px)';
     }
-};
 
-function updateOverallProgress(completed, target) {
-    const percent = target > 0 ? Math.round((completed / target) * 100) : 0;
-    document.getElementById('total-hours-completed').textContent = completed;
-    document.getElementById('total-target-hours').textContent = target;
-    document.getElementById('total-hours-remaining').textContent = Math.max(target - completed, 0);
-    document.getElementById('overall-progress-bar').style.width = `${Math.min(percent, 100)}%`;
-    document.getElementById('overall-progress-percent').textContent = `${percent}%`;
+    const glow = document.getElementById('orb-glow');
+    const fill = document.getElementById('timer-progress');
+    const durationInput = document.getElementById('timer-duration');
+    
+    if (mode === 'rest') {
+        if (glow) glow.style.background = 'radial-gradient(circle, rgba(248, 81, 73, 0.15) 0%, transparent 70%)';
+        if (fill) fill.style.stroke = 'var(--accent-danger)';
+        durationInput.value = 5;
+    } else {
+        if (glow) glow.style.background = 'radial-gradient(circle, rgba(88, 166, 255, 0.15) 0%, transparent 70%)';
+        if (fill) fill.style.stroke = 'var(--accent-primary)';
+        durationInput.value = 25;
+    }
+    resetTimer();
 }
 
-function saveProgress() { localStorage.setItem('ucsc_study_tracker_data', JSON.stringify(appState)); }
+function startTimer() {
+    if (timerInterval) return;
+    const sub = document.getElementById('timer-subject').value;
+    if (currentMode === 'study' && !sub) return alert('Please select a module to focus on.');
+
+    document.getElementById('timer-status').textContent = currentMode === 'study' ? "Neural synthesis active..." : "Physiological recovery in progress...";
+    
+    startFallingLeaves();
+
+    timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerDisplay();
+        if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            stopFallingLeaves();
+            timerFinished();
+        }
+    }, 1000);
+}
+
+function pauseTimer() { 
+    clearInterval(timerInterval); 
+    timerInterval = null; 
+    stopFallingLeaves();
+    document.getElementById('timer-status').textContent = "Session interrupted.";
+}
+
+function resetTimer() {
+    pauseTimer();
+    stopFallingLeaves();
+    const mins = parseInt(document.getElementById('timer-duration').value) || 25;
+    timerSeconds = mins * 60;
+    totalTimerSeconds = mins * 60;
+    updateTimerDisplay();
+}
+
+function startFallingLeaves() {
+    const container = document.getElementById('leaves-container');
+    if (!container) return;
+    
+    stopFallingLeaves();
+    
+    const colors = ['#e67e22', '#d35400', '#f39c12', '#c0392b'];
+    
+    leafInterval = setInterval(() => {
+        const leaf = document.createElement('div');
+        leaf.className = 'leaf';
+        leaf.style.left = Math.random() * 100 + 'vw';
+        leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        leaf.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        leaf.style.opacity = Math.random();
+        leaf.style.width = (Math.random() * 15 + 10) + 'px';
+        leaf.style.height = leaf.style.width;
+        
+        container.appendChild(leaf);
+        setTimeout(() => leaf.remove(), 10000);
+    }, 400);
+}
+
+function stopFallingLeaves() {
+    if (leafInterval) {
+        clearInterval(leafInterval);
+        leafInterval = null;
+    }
+    const container = document.getElementById('leaves-container');
+    if (container) container.innerHTML = '';
+}
+
+function updateTimerDisplay() {
+    const m = Math.floor(timerSeconds / 60);
+    const s = timerSeconds % 60;
+    document.getElementById('timer-time').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    
+    // World-Class ECG Progress Logic
+    // Progress starts at 450 (empty) and goes to 0 (full) left-to-right
+    const totalLength = 450;
+    const progress = timerSeconds / totalTimerSeconds;
+    const offset = totalLength * progress; 
+    document.getElementById('timer-progress').style.strokeDashoffset = offset;
+}
+
+function timerFinished() {
+    const subId = document.getElementById('timer-subject').value;
+    if (currentMode === 'study' && subId && appState.progress[subId]) {
+        const hrs = parseInt(document.getElementById('timer-duration').value) / 60;
+        
+        // Find module to get target cap
+        const { course, year, semester } = appState;
+        const module = COURSE_DATA[course][year][semester].find(m => m.id === subId);
+        
+        if (module) {
+            const targets = calculateTargets(module);
+            // Apply cap: Current + New, but not exceeding target
+            appState.progress[subId].self = Math.min(targets.self, (appState.progress[subId].self || 0) + hrs);
+            saveProgress();
+        }
+    }
+    alert(currentMode === 'study' ? 'Deep Work Session Complete. Progress synced to Dashboard.' : 'Recovery Cycle Complete.');
+    resetTimer();
+}
+
+function saveProgress() { localStorage.setItem('ucsc_study_v3_synced', JSON.stringify(appState)); }
 function loadProgress() {
-    const saved = localStorage.getItem('ucsc_study_tracker_data');
-    if (saved) try { appState = JSON.parse(saved); } catch (e) {}
+    const s = localStorage.getItem('ucsc_study_v3_synced');
+    if (s) {
+        try { 
+            appState = JSON.parse(s); 
+            // Migration: Ensure papers object exists for old saves
+            if (!appState.papers) appState.papers = {};
+        } catch (e) {}
+    }
 }
+
+// World-Class Mouse Tracking Engine for Roadmap Cards
+document.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.roadmap-card');
+    cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+});
+
+
