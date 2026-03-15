@@ -523,9 +523,8 @@ function renderCurriculum(course) {
 
         const yearHeader = document.createElement('div');
         yearHeader.className = 'roadmap-year-header';
-        const yearKey = year.replace('Year', 'Y');
         yearHeader.innerHTML = `
-            <div class="year-node year-node-${yearKey.toLowerCase()}"><span>${yearKey}</span></div>
+            <div class="year-node"><span>${year.replace('Year', 'Y')}</span></div>
             <h3 class="year-title">${year.replace('Year', 'Year ')}</h3>
         `;
         yearSection.appendChild(yearHeader);
@@ -576,11 +575,18 @@ function renderCurriculum(course) {
     // Animation Observer
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) entry.target.classList.add('visible');
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
         });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.05 });
 
     document.querySelectorAll('.roadmap-year-section').forEach(s => observer.observe(s));
+    
+    // Fallback: If elements are still not visible after 1s, force them (for some browser environments)
+    setTimeout(() => {
+        document.querySelectorAll('.roadmap-year-section').forEach(s => s.classList.add('visible'));
+    }, 1000);
 }
 function calculateTargets(module) {
     const lecture   = (module.lectureCredits   || 0) * 15;
@@ -872,21 +878,39 @@ function startFallingLeaves() {
     
     stopFallingLeaves();
     
-    const colors = ['#e67e22', '#d35400', '#f39c12', '#c0392b'];
+    const colors = ['#e67e22', '#d35400', '#f39c12', '#c0392b', '#b8860b'];
     
+    // Original high-density frequency (200ms)
     leafInterval = setInterval(() => {
         const leaf = document.createElement('div');
         leaf.className = 'leaf';
-        leaf.style.left = Math.random() * 100 + 'vw';
-        leaf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        leaf.style.animationDuration = (Math.random() * 5 + 5) + 's';
-        leaf.style.opacity = Math.random();
-        leaf.style.width = (Math.random() * 15 + 10) + 'px';
-        leaf.style.height = leaf.style.width;
+        
+        const size = Math.random() * 18 + 10;
+        const duration = Math.random() * 4 + 4;
+        const left = Math.random() * 100;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Random drift and rotation using CSS variables
+        const drift = (Math.random() * 300 - 150) + 'px';
+        const rev = (Math.random() * 1000 + 360) + 'deg';
+        
+        leaf.style.setProperty('--drift', drift);
+        leaf.style.setProperty('--rev', rev);
+        
+        leaf.style.left = left + 'vw';
+        leaf.style.width = size + 'px';
+        leaf.style.height = (size * 0.6) + 'px';
+        leaf.style.backgroundColor = color;
+        leaf.style.animationDuration = duration + 's';
         
         container.appendChild(leaf);
-        setTimeout(() => leaf.remove(), 10000);
-    }, 400);
+        
+        setTimeout(() => {
+            if (leaf.parentNode === container) {
+                leaf.remove();
+            }
+        }, duration * 1000);
+    }, 200);
 }
 
 function stopFallingLeaves() {
