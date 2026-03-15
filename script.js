@@ -199,7 +199,13 @@ let appState = {
     year: null,
     semester: null,
     progress: {},
-    papers: {} // { moduleId: [2019, 2021] }
+    papers: {}, // { moduleId: [2019, 2021] }
+    studyHistory: [], // Array of { moduleId, minutes, timestamp }
+    milestones: {
+        lectures: [], // Array of "moduleId-type"
+        modules: [],  // Array of moduleIds
+        semester: false
+    }
 };
 
 let timerInterval = null;
@@ -208,30 +214,34 @@ let timerSeconds = 25 * 60;
 let totalTimerSeconds = 25 * 60;
 let currentMode = 'study';
 
-// DOM Elements
-const sections = {
-    landing: document.getElementById('landing-section'),
-    setup: document.getElementById('setup-section'),
-    dashboard: document.getElementById('dashboard-section'),
-    timer: document.getElementById('timer-section'),
-    curriculum: document.getElementById('curriculum-section'),
-    'past-papers': document.getElementById('past-papers-section'),
-    achievements: document.getElementById('achievements-section'),
-    daily: document.getElementById('daily-tracker-section'),
-    gpa: document.getElementById('gpa-section')
-};
-
-const nav = document.getElementById('main-nav');
-const setupForm = document.getElementById('setup-form');
-const modulesContainer = document.getElementById('modules-container');
-const themeToggle = document.getElementById('checkbox');
+// DOM Elements (will be initialized on load)
+let sections = {};
+let nav, setupForm, modulesContainer, themeToggle;
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize DOM Elements
+    sections = {
+        landing: document.getElementById('landing-section'),
+        setup: document.getElementById('setup-section'),
+        dashboard: document.getElementById('dashboard-section'),
+        timer: document.getElementById('timer-section'),
+        curriculum: document.getElementById('curriculum-section'),
+        'past-papers': document.getElementById('past-papers-section'),
+        achievements: document.getElementById('achievements-section'),
+        daily: document.getElementById('daily-tracker-section'),
+        gpa: document.getElementById('gpa-section')
+    };
+
+    nav = document.getElementById('main-nav');
+    setupForm = document.getElementById('setup-form');
+    modulesContainer = document.getElementById('modules-container');
+    themeToggle = document.getElementById('checkbox');
+
     loadProgress();
     initEventListeners();
-    // createParticles();
     initTheme();
+    
     if (appState.course) initializeDailyTracker();
     if (document.getElementById('daily-study-plan-container')) renderDailyTracker();
     
@@ -455,40 +465,70 @@ function renderAchievements() {
     if (!container) return;
     container.innerHTML = '';
 
-    const { course, year, semester } = appState;
+    const { course } = appState;
     if (!course) return;
 
     // 1. Bronze Badges (Task Completion within Module)
-    const modules = COURSE_DATA[course][year][semester];
-    modules.forEach(m => {
-        const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0 };
-        const targets = calculateTargets(m);
-        
-        if (p.lecture >= targets.lecture && targets.lecture > 0) createBadge(container, 'bronze', `${m.id} Lecture`, 'Lecture hours complete');
-        if (p.practical >= targets.practical && targets.practical > 0) createBadge(container, 'bronze', `${m.id} Practical`, 'Practical hours complete');
-        if (p.self >= targets.self && targets.self > 0) createBadge(container, 'bronze', `${m.id} Self-Study`, 'Deep work target met');
+    // 2. Silver Badges (100% Module Completion)
+    // These are only for the CURRENTLY SELECTED semester to avoid cluttering, 
+    // but the higher-level badges check the entire appState.
+    const { year: currentYear, semester: currentSemester } = appState;
+    if (currentYear && currentSemester && COURSE_DATA[course][currentYear][currentSemester]) {
+        const modules = COURSE_DATA[course][currentYear][currentSemester];
+        modules.forEach(m => {
+            const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0, other: 0 };
+            const targets = calculateTargets(m);
+            
+            if (p.lecture >= targets.lecture && targets.lecture > 0) createBadge(container, 'bronze', `${m.id} Lecture`, 'Lecture hours complete');
+            if (p.practical >= targets.practical && targets.practical > 0) createBadge(container, 'bronze', `${m.id} Practical`, 'Practical hours complete');
+            if (p.self >= targets.self && targets.self > 0) createBadge(container, 'bronze', `${m.id} Self-Study`, 'Deep work target met');
+            if (p.other >= targets.other && targets.other > 0) createBadge(container, 'bronze', `${m.id} Other`, 'Ancillary tasks complete');
 
-        // 2. Silver Badges (100% Module Completion)
-        const done = p.lecture + p.practical + p.self;
-        if (done >= targets.total && targets.total > 0) {
-            createBadge(container, 'silver', `${m.id} Master`, `${m.name} 100% complete`);
+            const done = (p.lecture || 0) + (p.practical || 0) + (p.self || 0) + (p.other || 0);
+            if (done >= targets.total && targets.total > 0) {
+                createBadge(container, 'silver', `${m.id} Master`, `${m.name} 100% complete`);
+            }
+        });
+    }
+
+    // High-level badge calculation logic
+    let completedSemesters = [];
+    let completedYears = [];
+
+    Object.keys(COURSE_DATA[course]).forEach(yearKey => {
+        let yearComplete = true;
+        Object.keys(COURSE_DATA[course][yearKey]).forEach(semKey => {
+            const modules = COURSE_DATA[course][yearKey][semKey];
+            const semComplete = modules.every(m => {
+                const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0, other: 0 };
+                const t = calculateTargets(m);
+                return ((p.lecture || 0) + (p.self || 0) + (p.practical || 0) + (p.other || 0)) >= t.total;
+            });
+            if (semComplete) {
+                completedSemesters.push({ year: yearKey, sem: semKey });
+            } else {
+                yearComplete = false;
+            }
+        });
+        if (yearComplete) {
+            completedYears.push(yearKey);
         }
     });
 
-    // 3. Golden Badge (Semester Completion)
-    let semesterComplete = true;
-    modules.forEach(m => {
-        const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0 };
-        const targets = calculateTargets(m);
-        if ((p.lecture + p.practical + p.self) < targets.total) semesterComplete = false;
+    // 3. Golden Badges (Semester Completion)
+    completedSemesters.forEach(s => {
+        createBadge(container, 'gold', `${s.year} ${s.sem.replace('Semester', 'S')}`, `Conquered ${s.sem} in ${s.year}`);
     });
-    if (semesterComplete) createBadge(container, 'gold', `${semester} Hero`, `All modules in ${semester} complete`);
 
-    // 4. Platinum Badge (Year Completion - Simplified for current semester context)
-    // In a full app, we would check all semesters in the year. 
-    // For this prototype, we'll award it if the current semester is the final one and complete.
-    if (semesterComplete && semester === 'Semester2') {
-        createBadge(container, 'platinum', `${year} Legend`, `Academic excellence in ${year}`);
+    // 4. Platinum Badges (Year Completion)
+    completedYears.forEach(y => {
+        createBadge(container, 'platinum', `${y} Legend`, `Academic excellence in ${y}`);
+    });
+
+    // 5. Legendary Badge (All 4 Years Complete)
+    const totalYears = Object.keys(COURSE_DATA[course]).length;
+    if (completedYears.length >= totalYears && totalYears > 0) {
+        createBadge(container, 'legendary', `UCSC Hero`, `Successfully completed the entire ${course} program!`);
     }
 }
 
@@ -596,6 +636,89 @@ function calculateTargets(module) {
     return { lecture, self, practical, other, total: lecture + self + practical + other };
 }
 
+function triggerCelebration(level, title, message) {
+    const overlay = document.getElementById('celebration-overlay');
+    if (!overlay) return;
+
+    overlay.innerHTML = '';
+    overlay.className = 'celebration-overlay ' + level;
+    
+    const ribbonCount = level === 'superb' ? 150 : (level === 'grand' ? 80 : 40);
+    const colors = ['#58a6ff', '#bc8cff', '#3fb950', '#d29922', '#f85149', '#ffd700', '#ffffff'];
+    
+    for (let i = 0; i < ribbonCount; i++) {
+        const ribbon = document.createElement('div');
+        ribbon.className = 'ribbon';
+        ribbon.style.left = Math.random() * 100 + 'vw';
+        ribbon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        ribbon.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        ribbon.style.animationDelay = (Math.random() * i * 0.05) + 's';
+        overlay.appendChild(ribbon);
+    }
+
+    const rider = document.createElement('div');
+    rider.className = 'broom-rider';
+    rider.innerHTML = `
+        <div class="harry-character">
+            <div class="harry-head">
+                <div class="harry-scar">⚡</div>
+                <div class="harry-glasses"><div class="lens"></div><div class="lens"></div></div>
+            </div>
+            <div class="harry-body"></div>
+            <div class="broomstick"><div class="broom-bristles"></div></div>
+        </div>
+    `;
+    overlay.appendChild(rider);
+
+    const scroll = document.createElement('div');
+    scroll.className = 'celebration-scroll';
+    scroll.innerHTML = `<div class="scroll-title">${title}</div><div class="scroll-message">${message}</div>`;
+    overlay.appendChild(scroll);
+    
+    setTimeout(() => scroll.classList.add('active'), 500);
+    setTimeout(() => { overlay.innerHTML = ''; overlay.className = 'celebration-overlay'; }, 8000);
+}
+
+function checkMilestones(moduleId, type) {
+    const { course, year, semester } = appState;
+    if (!course) return;
+    const module = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
+    if (!module) return;
+    const targets = calculateTargets(module);
+    const progress = appState.progress[moduleId];
+    if (!progress) return;
+
+    if (!appState.milestones) appState.milestones = { lectures: [], modules: [], semester: false };
+
+    if (progress[type] >= targets[type] && targets[type] > 0) {
+        const key = `${moduleId}-${type}`;
+        if (!appState.milestones.lectures.includes(key)) {
+            appState.milestones.lectures.push(key);
+            triggerCelebration('lecture', 'Target Met!', `You have completed the ${type} target for <b>${moduleId}</b>. Great work!`);
+        }
+    }
+
+    const totalDone = (progress.lecture || 0) + (progress.self || 0) + (progress.practical || 0) + (progress.other || 0);
+    if (totalDone >= targets.total && targets.total > 0) {
+        if (!appState.milestones.modules.includes(moduleId)) {
+            appState.milestones.modules.push(moduleId);
+            triggerCelebration('grand', 'Module Mastered!', `Magnificent! You have 100% completed <b>${module.name}</b>. A true academic wizard!`);
+        }
+    }
+
+    const modules = COURSE_DATA[course][year][semester];
+    const allModulesDone = modules.every(m => {
+        const p = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0, other: 0 };
+        const t = calculateTargets(m);
+        return ((p.lecture || 0) + (p.self || 0) + (p.practical || 0) + (p.other || 0)) >= t.total;
+    });
+
+    if (allModulesDone && !appState.milestones.semester) {
+        appState.milestones.semester = true;
+        triggerCelebration('superb', 'Semester Conquered!', `OUT OF THIS WORLD! You have completed every module for <b>${semester}</b>. You are a legend of UCSC!`);
+    }
+}
+
 function renderDashboard() {
     const { course, year, semester } = appState;
     if (!course || !COURSE_DATA[course][year][semester]) return;
@@ -610,15 +733,23 @@ function renderDashboard() {
         const targets = calculateTargets(m);
         const progress = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0, other: 0 };
         const done = (progress.lecture || 0) + (progress.self || 0) + (progress.practical || 0) + (progress.other || 0);
+        const isCompleted = done >= targets.total && targets.total > 0;
         
         totalDone += done;
         totalTarget += targets.total;
 
         const card = document.createElement('div');
-        card.className = 'module-card animate-up';
+        card.className = `module-card animate-up ${isCompleted ? 'completed' : ''}`;
+        card.style.position = 'relative';
+        
         card.innerHTML = `
+            ${isCompleted ? '<div class="completion-badge"><span>✓</span> COMPLETED</div>' : ''}
             <div class="module-meta">
                 <span>${m.id}</span>
+                <button class="history-btn-trigger" onclick="showHistory('${m.id}')" title="View Study History">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    History
+                </button>
                 <span>${targets.total > 0 ? Math.min(100, Math.round((done / targets.total) * 100)) : 0}%</span>
             </div>
             <h4>${m.name}</h4>
@@ -636,10 +767,14 @@ function renderDashboard() {
     });
 
     const overallPercent = totalTarget > 0 ? Math.min(100, Math.round((totalDone / totalTarget) * 100)) : 0;
-    document.getElementById('overall-progress-percent').textContent = `${overallPercent}%`;
-    document.getElementById('overall-progress-bar').style.width = `${overallPercent}%`;
-    document.getElementById('total-hours-completed').textContent = Math.round(totalDone);
-    document.getElementById('total-hours-remaining').textContent = Math.round(Math.max(0, totalTarget - totalDone));
+    const overallPercentEl = document.getElementById('overall-progress-percent');
+    if (overallPercentEl) overallPercentEl.textContent = `${overallPercent}%`;
+    const overallProgressBarEl = document.getElementById('overall-progress-bar');
+    if (overallProgressBarEl) overallProgressBarEl.style.width = `${overallPercent}%`;
+    const totalHoursCompletedEl = document.getElementById('total-hours-completed');
+    if (totalHoursCompletedEl) totalHoursCompletedEl.textContent = Math.round(totalDone);
+    const totalHoursRemainingEl = document.getElementById('total-hours-remaining');
+    if (totalHoursRemainingEl) totalHoursRemainingEl.textContent = Math.round(Math.max(0, totalTarget - totalDone));
 }
 
 function renderHourItem(moduleId, label, current, target, type, color) {
@@ -677,18 +812,105 @@ function renderHourItem(moduleId, label, current, target, type, color) {
     `;
 }
 
+window.showHistory = function(moduleId) {
+    const historyOverlay = document.createElement('div');
+    historyOverlay.className = 'history-modal-overlay';
+    
+    const history = (appState.studyHistory || []).filter(h => h.moduleId === moduleId).reverse();
+    const module = COURSE_DATA[appState.course][appState.year][appState.semester].find(m => m.id === moduleId);
+    
+    // Stats calculation
+    const totalMinutes = history.reduce((acc, curr) => acc + curr.minutes, 0);
+    const totalHours = (totalMinutes / 60).toFixed(1);
+    const avgSession = history.length > 0 ? Math.round(totalMinutes / history.length) : 0;
+
+    let contentHTML = '';
+    
+    if (history.length === 0) {
+        contentHTML = `
+            <div class="no-history-state">
+                <div class="no-history-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <p>No study sessions recorded yet for this module. Start the timer to begin your journey.</p>
+            </div>
+        `;
+    } else {
+        const itemsHTML = history.map(item => {
+            const dateObj = new Date(item.timestamp);
+            const day = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+            const date = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            const time = dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+            
+            return `
+                <div class="history-item-advanced">
+                    <div class="h-item-time-wrap">
+                        <span class="h-item-day">${day}</span>
+                        <span class="h-item-date">${date}</span>
+                    </div>
+                    <div class="h-item-card">
+                        <div class="h-item-details">
+                            <span class="h-item-label">Focus Session</span>
+                            <div class="h-item-duration">${item.minutes}<span class="unit">MINS</span></div>
+                        </div>
+                        <div class="h-item-clock">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            ${time}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        contentHTML = `
+            <div class="history-stats-bar">
+                <div class="h-stat-item">
+                    <span class="h-stat-value">${history.length}</span>
+                    <span class="h-stat-label">Sessions</span>
+                </div>
+                <div class="h-stat-item">
+                    <span class="h-stat-value">${totalHours}</span>
+                    <span class="h-stat-label">Total Hrs</span>
+                </div>
+                <div class="h-stat-item">
+                    <span class="h-stat-value">${avgSession}m</span>
+                    <span class="h-stat-label">Avg Focus</span>
+                </div>
+            </div>
+            <div class="history-list-container">
+                ${itemsHTML}
+            </div>
+        `;
+    }
+
+    historyOverlay.innerHTML = `
+        <div class="history-modal-content animate-jaw-drop">
+            <button class="close-history-btn" onclick="this.closest('.history-modal-overlay').remove()">×</button>
+            <div class="history-header">
+                <div class="history-module-tag">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    ${moduleId}
+                </div>
+                <h2>Focus History</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">${module ? module.name : 'Module Journey'}</p>
+            </div>
+            ${contentHTML}
+        </div>`;
+        
+    document.body.appendChild(historyOverlay);
+    historyOverlay.addEventListener('click', (e) => { if (e.target === historyOverlay) historyOverlay.remove(); });
+};
+
 window.updateHour = function(moduleId, type, delta) {
     if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0, other: 0 };
-    
-    // Find module to get target
     const { course, year, semester } = appState;
     const module = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
     if (!module) return;
-    
     const targets = calculateTargets(module);
     const maxVal = targets[type];
-    
-    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, (appState.progress[moduleId][type] || 0) + delta));
+    const oldVal = appState.progress[moduleId][type] || 0;
+    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, oldVal + delta));
+    if (appState.progress[moduleId][type] > oldVal) checkMilestones(moduleId, type);
     saveProgress();
     renderDashboard();
 };
@@ -700,35 +922,34 @@ window.adjustModuleProgress = function(moduleId, type, delta) {
     if (!module) return;
     const targets = calculateTargets(module);
     const maxVal = targets[type];
-    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, (appState.progress[moduleId][type] || 0) + delta));
-    if (type === 'self') {
-        // sync to daily tracker if active
-        if (sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
-    }
+    const oldVal = appState.progress[moduleId][type] || 0;
+    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, oldVal + delta));
+    if (appState.progress[moduleId][type] > oldVal) checkMilestones(moduleId, type);
+    if (type === 'self' && sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
     saveProgress();
     renderDashboard();
 };
 
 window.resetModuleProgress = function(moduleId) {
-    if (!confirm('Are you sure you want to reset all progress for this module?')) return;
+    if (!confirm('Are you sure?')) return;
     appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0, other: 0 };
+    if (appState.milestones) {
+        appState.milestones.modules = (appState.milestones.modules || []).filter(id => id !== moduleId);
+        appState.milestones.lectures = (appState.milestones.lectures || []).filter(key => !key.startsWith(moduleId + '-'));
+        appState.milestones.semester = false;
+    }
     saveProgress();
     renderDashboard();
     if (sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
 };
 
 window.resetAllProgress = function() {
-    if (!confirm('Are you sure you want to reset ALL progress for the entire semester? This cannot be undone.')) return;
+    if (!confirm('Are you sure?')) return;
     const { course, year, semester } = appState;
     if (!course) return;
-    COURSE_DATA[course][year][semester].forEach(m => {
-        appState.progress[m.id] = { lecture: 0, self: 0, practical: 0, other: 0 };
-    });
-    if (appState.dailyProgress) {
-        appState.dailyProgress.completed = 0;
-        appState.dailyProgress.completedTasks = [];
-        appState.dailyProgress.moduleProgress = {};
-    }
+    COURSE_DATA[course][year][semester].forEach(m => { appState.progress[m.id] = { lecture: 0, self: 0, practical: 0, other: 0 }; });
+    if (appState.dailyProgress) { appState.dailyProgress.completed = 0; appState.dailyProgress.completedTasks = []; appState.dailyProgress.moduleProgress = {}; }
+    appState.milestones = { lectures: [], modules: [], semester: false };
     saveProgress();
     renderDashboard();
     if (sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
@@ -932,19 +1153,23 @@ function updateTimerDisplay() {
     const totalLength = 450;
     const progress = timerSeconds / totalTimerSeconds;
     const offset = totalLength * progress; 
-    document.getElementById('timer-progress').style.strokeDashoffset = offset;
+    const progressBar = document.getElementById('timer-progress');
+    if (progressBar) progressBar.style.strokeDashoffset = offset;
 }
 
 function timerFinished() {
     const subId = document.getElementById('timer-subject').value;
     if (currentMode === 'study' && subId && appState.progress[subId]) {
-        const hrs = parseInt(document.getElementById('timer-duration').value) / 60;
-        connectTimerToDailyTracker(hrs, subId);
+        const mins = parseInt(document.getElementById('timer-duration').value);
+        if (!appState.studyHistory) appState.studyHistory = [];
+        appState.studyHistory.push({ moduleId: subId, minutes: mins, timestamp: new Date().getTime() });
+        connectTimerToDailyTracker(mins / 60, subId);
         saveProgress();
     }
-    alert(currentMode === 'study' ? 'Deep Work Session Complete. Progress synced to Dashboard.' : 'Recovery Cycle Complete.');
+    alert(currentMode === 'study' ? 'Deep Work Session Complete.' : 'Recovery Cycle Complete.');
     resetTimer();
 }
+
 
 function saveProgress() { localStorage.setItem('ucsc_study_v3_synced', JSON.stringify(appState)); }
 function loadProgress() {
