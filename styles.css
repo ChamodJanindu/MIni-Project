@@ -107,7 +107,7 @@ header {
 .nav-links-wrapper {
     position: relative;
     display: flex;
-    gap: 0.5rem;
+    gap: 0.15rem;
     background: rgba(255, 255, 255, 0.03);
     padding: 6px;
     border-radius: 100px;
@@ -124,13 +124,13 @@ header {
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.4rem;
     background: transparent !important;
     border: none;
-    padding: 0.7rem 1.25rem;
+    padding: 0.7rem 0.75rem;
     border-radius: 100px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
@@ -1323,13 +1323,13 @@ select.timer-input:focus {
 .branch-container {
     position: relative;
     width: 100%;
-    margin: 4rem 0;
-    padding: 4rem 0;
+    margin: 2rem 0;
+    padding: 2rem 0;
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
     align-items: center;
-    min-height: 400px;
+    min-height: 220px;
     scrollbar-width: thin;
     scrollbar-color: var(--accent-primary) transparent;
 }
@@ -1341,7 +1341,7 @@ select.timer-input:focus {
     left: 0;
     right: 0;
     top: 50%;
-    height: 4px;
+    height: 3px;
     background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary), var(--accent-success));
     transform: translateY(-50%);
     border-radius: 2px;
@@ -1351,7 +1351,7 @@ select.timer-input:focus {
 
 .branch-item {
     position: relative;
-    flex: 0 0 160px;
+    flex: 0 0 100px;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -1365,11 +1365,11 @@ select.timer-input:focus {
 
 /* Alternating Branches (Up/Down) */
 .branch-item.up {
-    transform: translateY(-80px);
+    transform: translateY(-50px);
 }
 
 .branch-item.down {
-    transform: translateY(80px);
+    transform: translateY(50px);
 }
 
 /* Vertical Connecting Line to Horizontal Trunk */
@@ -1385,13 +1385,13 @@ select.timer-input:focus {
 
 .branch-item.up::after {
     top: 50%;
-    height: 80px;
+    height: 50px;
     transform: translateY(0);
 }
 
 .branch-item.down::after {
     bottom: 50%;
-    height: 80px;
+    height: 50px;
     transform: translateY(0);
 }
 
@@ -1403,30 +1403,30 @@ select.timer-input:focus {
     background: #161b22;
     backdrop-filter: var(--glass-blur);
     border: 2px solid var(--border-subtle);
-    border-radius: 24px;
-    padding: 1rem;
+    border-radius: 16px;
+    padding: 0.6rem;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    width: 130px;
-    height: 130px;
+    width: 80px;
+    height: 80px;
     position: relative;
     z-index: 3;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
 .branch-node .year-val {
-    font-size: 1.6rem;
+    font-size: 1rem;
     font-weight: 900;
-    color: #fff; /* Improved Visibility */
+    color: #fff;
     text-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .branch-node .status-label {
-    font-size: 0.75rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     font-weight: 800;
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
     color: var(--text-muted);
 }
 
@@ -1441,7 +1441,7 @@ select.timer-input:focus {
     border-color: var(--accent-success);
     background: rgba(63, 185, 80, 0.15);
     transform: scale(1.1);
-    box-shadow: 0 0 40px rgba(63, 185, 80, 0.3);
+    box-shadow: 0 0 25px rgba(63, 185, 80, 0.3);
 }
 
 .branch-node.done .year-val {
@@ -1718,4 +1718,370 @@ select.timer-input:focus {
 @media (max-width: 900px) {
     .roadmap-semesters { grid-template-columns: 1fr !important; }
     .year-title { font-size: 3rem !important; }
+}
+
+/* ===== Light Mode: Roadmap & Past Papers Fixes ===== */
+[data-theme="light"] .year-title {
+    color: #1a1a2e !important;
+}
+[data-theme="light"] .roadmap-year-header:hover .year-title {
+    color: var(--h-color) !important;
+}
+[data-theme="light"] .semester-stage {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"] .roadmap-card {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .roadmap-card:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .roadmap-card .mod-name {
+    color: #1a1a2e !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .roadmap-card:hover .mod-name {
+    color: var(--h-color) !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .branch-node {
+    background: #f0f2f5 !important;
+    border-color: var(--border-subtle) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+}
+[data-theme="light"] .branch-node .year-val {
+    color: #1a1a2e !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .branch-node.done {
+    background: rgba(63, 185, 80, 0.35) !important;
+    border-color: #2ea84a !important;
+    border-width: 3px !important;
+    box-shadow: 0 0 18px rgba(46, 168, 74, 0.5) !important;
+}
+[data-theme="light"] .branch-node.done .year-val {
+    color: #1a1a2e !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .branch-node.done .status-label {
+    color: #1a6e2a !important;
+}
+[data-theme="light"] .badge-name {
+    color: #fff !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4) !important;
+}
+
+.daily-tracker-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  backdrop-filter: var(--glass-blur);
+}
+.daily-progress-container { margin-top: 1.5rem; }
+.daily-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.daily-progress-bar-large {
+  width: 100%;
+  height: 32px;
+  background: var(--bg-input);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.daily-progress-fill {
+  height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  box-shadow: 0 0 16px rgba(88, 166, 255, 0.35);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.midnight-countdown-wrap {
+  text-align: center;
+  margin: 0.75rem 0 1.25rem;
+}
+#midnight-countdown {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  display: inline-block;
+}
+.semester-progress-section { margin: 1.75rem 0 1rem; }
+.semester-progress-section .section-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.semester-progress-bar-track {
+  width: 100%;
+  height: 20px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.semester-progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--accent-success), #58d68d);
+  box-shadow: 0 0 12px rgba(63, 185, 80, 0.35);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.semester-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+.study-phase-panel {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.study-phase-panel h5 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.9rem;
+}
+.phase-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.phase-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.phase-btn.active, .phase-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(88,166,255,0.08);
+}
+.phase-config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.phase-config-row label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.phase-config-row input[type="number"] {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  width: 100%;
+  max-width: 180px;
+  outline: none;
+}
+.phase-config-row input[type="number"]:focus { border-color: var(--accent-primary); }
+.phase-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.phase-target-display {
+  font-size: 0.88rem;
+  color: var(--accent-secondary);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.daily-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.daily-module-item {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  transition: var(--transition-smooth);
+}
+.daily-module-item.completed { border-color: var(--accent-success); opacity: 0.75; }
+.daily-module-item-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.daily-module-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.daily-module-info { flex: 1; }
+.daily-module-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.15rem;
+}
+.daily-module-info p { font-size: 0.78rem; color: var(--text-muted); }
+.daily-module-time {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-secondary);
+  white-space: nowrap;
+}
+.daily-module-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.daily-module-bar-track {
+  width: 100%;
+  height: 22px;
+  background: var(--bg-card);
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.daily-module-bar-fill {
+  height: 100%;
+  border-radius: 11px;
+  background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+  box-shadow: 0 0 12px rgba(188,140,255,0.4);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.daily-module-adjust-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  justify-content: flex-end;
+}
+/* ===== GPA Calculator ===== */
+.gpa-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+.gpa-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.gpa-table thead tr { background: var(--bg-input); }
+.gpa-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.gpa-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+.gpa-table tbody tr:last-child td { border-bottom: none; }
+.gpa-table tbody tr:hover { background: var(--bg-input); }
+.gpa-grade-select {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  width: 100%;
+  max-width: 140px;
+}
+.gpa-grade-select:focus { outline: none; border-color: var(--accent-primary); }
+.gpa-target-box {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.gpa-target-normal {
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.3);
+  color: var(--text-main);
+}
+.gpa-target-impossible {
+  background: rgba(248,81,73,0.08);
+  border: 1px solid rgba(248,81,73,0.3);
+  color: var(--text-main);
+}
+.gpa-target-easy {
+  background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.3);
+  color: var(--text-main);
+}
+/* ===== Reset Buttons ===== */
+.module-reset-row { margin-top: 1rem; text-align: right; }
+.btn-reset-module {
+  background: transparent;
+  border: 1px solid rgba(248,81,73,0.4);
+  color: var(--accent-danger);
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-reset-module:hover {
+  background: rgba(248,81,73,0.1);
+  border-color: var(--accent-danger);
+}
+.btn-reset-all {
+  background: transparent;
+  border: 1px solid rgba(248,81,73,0.5);
+  color: var(--accent-danger);
+  padding: 0.45rem 1.1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-reset-all:hover {
+  background: rgba(248,81,73,0.12);
+  border-color: var(--accent-danger);
 }

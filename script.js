@@ -216,7 +216,9 @@ const sections = {
     timer: document.getElementById('timer-section'),
     curriculum: document.getElementById('curriculum-section'),
     'past-papers': document.getElementById('past-papers-section'),
-    achievements: document.getElementById('achievements-section')
+    achievements: document.getElementById('achievements-section'),
+    daily: document.getElementById('daily-tracker-section'),
+    gpa: document.getElementById('gpa-section')
 };
 
 const nav = document.getElementById('main-nav');
@@ -230,6 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initEventListeners();
     // createParticles();
     initTheme();
+    if (appState.course) initializeDailyTracker();
+    if (document.getElementById('daily-study-plan-container')) renderDailyTracker();
     
     if (appState.course && appState.year && appState.semester) {
         showSection('dashboard');
@@ -294,7 +298,7 @@ function initEventListeners() {
         const modules = COURSE_DATA[course][year][semester];
         modules.forEach(m => {
             if (!appState.progress[m.id]) {
-                appState.progress[m.id] = { lecture: 0, self: 0, practical: 0 };
+                appState.progress[m.id] = { lecture: 0, self: 0, practical: 0, other: 0 };
             }
         });
 
@@ -342,7 +346,7 @@ function showSection(sectionId) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    const isApp = ['dashboard', 'timer', 'curriculum', 'achievements', 'past-papers'].includes(sectionId);
+    const isApp = ['dashboard', 'timer', 'curriculum', 'achievements', 'past-papers', 'daily', 'gpa'].includes(sectionId);
     nav.classList.toggle('hidden', !isApp);
 
     // Update Main Nav Active State & Indicator
@@ -370,6 +374,9 @@ function showSection(sectionId) {
     if (sectionId === 'achievements') {
         renderAchievements();
     }
+    if (sectionId === 'dashboard') { renderDashboard(); }
+    if (sectionId === 'timer') { populateTimerSubjects(); }
+    if (sectionId === 'daily') { renderDailyTracker(); }
 }
 
 function renderPastPapers() {
@@ -558,10 +565,11 @@ function renderCurriculum(course) {
     document.querySelectorAll('.roadmap-year-section').forEach(s => observer.observe(s));
 }
 function calculateTargets(module) {
-    const lecture = (module.lectureCredits || 0) * 15;
-    const self = (module.lectureCredits || 0) * 30;
-    const practical = (module.practicalCredits || 0) * 45; 
-    return { lecture, self, practical, total: lecture + self + practical };
+    const lecture   = (module.lectureCredits   || 0) * 15;
+    const self      = (module.lectureCredits   || 0) * 30;
+    const practical = (module.practicalCredits || 0) * 30;
+    const other     = (module.lectureCredits   || 0) * 5;
+    return { lecture, self, practical, other, total: lecture + self + practical + other };
 }
 
 function renderDashboard() {
@@ -576,8 +584,8 @@ function renderDashboard() {
 
     modules.forEach(m => {
         const targets = calculateTargets(m);
-        const progress = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0 };
-        const done = (progress.lecture || 0) + (progress.self || 0) + (progress.practical || 0);
+        const progress = appState.progress[m.id] || { lecture: 0, self: 0, practical: 0, other: 0 };
+        const done = (progress.lecture || 0) + (progress.self || 0) + (progress.practical || 0) + (progress.other || 0);
         
         totalDone += done;
         totalTarget += targets.total;
@@ -594,6 +602,10 @@ function renderDashboard() {
                 ${renderHourItem(m.id, 'Lecture', progress.lecture, targets.lecture, 'lecture', 'var(--accent-primary)')}
                 ${renderHourItem(m.id, 'Practical', progress.practical, targets.practical, 'practical', 'var(--accent-success)')}
                 ${renderHourItem(m.id, 'Self Study', progress.self, targets.self, 'self', 'var(--accent-secondary)')}
+                ${renderHourItem(m.id, 'Other', progress.other, targets.other, 'other', 'var(--accent-warning)')}
+            </div>
+            <div class="module-reset-row">
+                <button class="btn-reset-module" onclick="resetModuleProgress('${m.id}')">Reset Module</button>
             </div>
         `;
         modulesContainer.appendChild(card);
@@ -633,15 +645,16 @@ function renderHourItem(moduleId, label, current, target, type, color) {
                 ${segmentsHTML}
             </div>
             <div class="module-btn-row" style="margin-top: 0.5rem">
-                <button class="btn-small-square" onclick="updateHour('${moduleId}', '${type}', -0.5)">-</button>
-                <button class="btn-small-square" onclick="updateHour('${moduleId}', '${type}', 0.5)">+</button>
+                <button class="btn-small-square" onclick="updateHour('${moduleId}', '${type}', -0.5)">-0.5</button>
+                <button class="btn-small-square" onclick="updateHour('${moduleId}', '${type}', 0.5)">+0.5</button>
+                ${label === 'Lecture' ? `<button class="btn-small-square" onclick="adjustModuleProgress('${moduleId}','${type}',1)">+1</button><button class="btn-small-square" onclick="adjustModuleProgress('${moduleId}','${type}',2)">+2</button>` : ''}
             </div>
         </div>
     `;
 }
 
 window.updateHour = function(moduleId, type, delta) {
-    if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0 };
+    if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0, other: 0 };
     
     // Find module to get target
     const { course, year, semester } = appState;
@@ -654,6 +667,47 @@ window.updateHour = function(moduleId, type, delta) {
     appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, (appState.progress[moduleId][type] || 0) + delta));
     saveProgress();
     renderDashboard();
+};
+
+window.adjustModuleProgress = function(moduleId, type, delta) {
+    if (!appState.progress[moduleId]) appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0, other: 0 };
+    const { course, year, semester } = appState;
+    const module = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
+    if (!module) return;
+    const targets = calculateTargets(module);
+    const maxVal = targets[type];
+    appState.progress[moduleId][type] = Math.max(0, Math.min(maxVal, (appState.progress[moduleId][type] || 0) + delta));
+    if (type === 'self') {
+        // sync to daily tracker if active
+        if (sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
+    }
+    saveProgress();
+    renderDashboard();
+};
+
+window.resetModuleProgress = function(moduleId) {
+    if (!confirm('Are you sure you want to reset all progress for this module?')) return;
+    appState.progress[moduleId] = { lecture: 0, self: 0, practical: 0, other: 0 };
+    saveProgress();
+    renderDashboard();
+    if (sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
+};
+
+window.resetAllProgress = function() {
+    if (!confirm('Are you sure you want to reset ALL progress for the entire semester? This cannot be undone.')) return;
+    const { course, year, semester } = appState;
+    if (!course) return;
+    COURSE_DATA[course][year][semester].forEach(m => {
+        appState.progress[m.id] = { lecture: 0, self: 0, practical: 0, other: 0 };
+    });
+    if (appState.dailyProgress) {
+        appState.dailyProgress.completed = 0;
+        appState.dailyProgress.completedTasks = [];
+        appState.dailyProgress.moduleProgress = {};
+    }
+    saveProgress();
+    renderDashboard();
+    if (sections.daily && sections.daily.classList.contains('active')) renderDailyTracker();
 };
 
 window.adjustDuration = function(delta) {
@@ -843,17 +897,8 @@ function timerFinished() {
     const subId = document.getElementById('timer-subject').value;
     if (currentMode === 'study' && subId && appState.progress[subId]) {
         const hrs = parseInt(document.getElementById('timer-duration').value) / 60;
-        
-        // Find module to get target cap
-        const { course, year, semester } = appState;
-        const module = COURSE_DATA[course][year][semester].find(m => m.id === subId);
-        
-        if (module) {
-            const targets = calculateTargets(module);
-            // Apply cap: Current + New, but not exceeding target
-            appState.progress[subId].self = Math.min(targets.self, (appState.progress[subId].self || 0) + hrs);
-            saveProgress();
-        }
+        connectTimerToDailyTracker(hrs, subId);
+        saveProgress();
     }
     alert(currentMode === 'study' ? 'Deep Work Session Complete. Progress synced to Dashboard.' : 'Recovery Cycle Complete.');
     resetTimer();
@@ -884,3 +929,402 @@ document.addEventListener('mousemove', (e) => {
 });
 
 
+
+// ===== DAILY TRACKER =====
+
+let midnightInterval = null;
+
+function roundToHalfHour(value) {
+    return Math.round(value * 2) / 2;
+}
+
+function calculateTotalSelfStudyHours() {
+    const { course, year, semester } = appState;
+    if (!course || !COURSE_DATA[course]?.[year]?.[semester]) return 0;
+    return COURSE_DATA[course][year][semester].reduce((total, m) => total + (m.lectureCredits || 0) * 30, 0);
+}
+
+function getCurrentDailyTarget() {
+    if (!appState.studyPlanConfig) return roundToHalfHour([0,6].includes(new Date().getDay()) ? 6 : 3);
+    const cfg = appState.studyPlanConfig;
+    const isWeekend = [0, 6].includes(new Date().getDay());
+    if (cfg.phase === 'lecture') return isWeekend ? 6 : 3;
+    if (cfg.phase === 'midbreak') return roundToHalfHour(cfg.midBreakDailyHours || 0);
+    if (cfg.phase === 'studyleave') {
+        const totalHours = calculateTotalSelfStudyHours();
+        const { course, year, semester } = appState;
+        let alreadyDone = 0;
+        if (course && COURSE_DATA[course]?.[year]?.[semester]) {
+            COURSE_DATA[course][year][semester].forEach(m => {
+                alreadyDone += (appState.progress[m.id]?.self || 0);
+            });
+        }
+        const midBreakTotal = cfg.midBreakEnabled ? (cfg.midBreakDays || 0) * (cfg.midBreakDailyHours || 0) : 0;
+        const remaining = Math.max(0, totalHours - alreadyDone - midBreakTotal);
+        return roundToHalfHour(remaining / (cfg.studyLeaveDays || 1));
+    }
+    return isWeekend ? 6 : 3;
+}
+
+function initializeDailyTracker() {
+    if (!appState.course) return;
+
+    if (!appState.studyPlanConfig) {
+        appState.studyPlanConfig = {
+            phase: 'lecture',
+            midBreakEnabled: false,
+            midBreakDays: 7,
+            midBreakDailyHours: 0,
+            studyLeaveDays: 7
+        };
+    }
+
+    const todayStr = new Date().toLocaleDateString();
+    if (!appState.dailyProgress) {
+        appState.dailyProgress = { date: todayStr, completed: 0, completedTasks: [], moduleProgress: {} };
+    } else {
+        if (!appState.dailyProgress.moduleProgress) appState.dailyProgress.moduleProgress = {};
+        if (appState.dailyProgress.date !== todayStr) {
+            appState.dailyProgress.date = todayStr;
+            appState.dailyProgress.completed = 0;
+            appState.dailyProgress.completedTasks = [];
+            appState.dailyProgress.moduleProgress = {};
+        }
+    }
+    saveProgress();
+}
+
+function generateDailyStudyPlan() {
+    const { course, year, semester } = appState;
+    if (!course || !COURSE_DATA[course]?.[year]?.[semester]) return [];
+    const modules = COURSE_DATA[course][year][semester];
+    const dailyTarget = getCurrentDailyTarget();
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const distribution = [0.5, 0.3, 0.2];
+    const plan = [];
+    for (let i = 0; i < Math.min(3, modules.length); i++) {
+        const modIndex = (dayOfYear + i) % modules.length;
+        const module = modules[modIndex];
+        const assignedTime = roundToHalfHour(dailyTarget * distribution[i]);
+        if (assignedTime > 0) plan.push({ id: module.id, name: module.name, time: assignedTime });
+    }
+    return plan;
+}
+
+function renderDailyTracker() {
+    const planContainer = document.getElementById('daily-study-plan-container');
+    if (!planContainer) return;
+
+    startMidnightCountdown();
+
+    if (!appState.course) {
+        planContainer.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem 0;">Please configure your environment first.</p>';
+        return;
+    }
+
+    initializeDailyTracker();
+
+    const semSection = document.getElementById('semester-self-study-section');
+    if (semSection) {
+        const { course, year, semester } = appState;
+        const totalSelf = calculateTotalSelfStudyHours();
+        let doneSelf = 0;
+        if (course && COURSE_DATA[course]?.[year]?.[semester]) {
+            COURSE_DATA[course][year][semester].forEach(m => { doneSelf += (appState.progress[m.id]?.self || 0); });
+        }
+        const selfPct = totalSelf > 0 ? Math.min(100, Math.round((doneSelf / totalSelf) * 100)) : 0;
+        semSection.innerHTML = `
+            <div class="semester-progress-section">
+              <div class="section-label">Semester Self-Study Total</div>
+              <div class="semester-progress-bar-track">
+                <div class="semester-progress-bar-fill" style="width:${selfPct}%;"></div>
+              </div>
+              <div class="semester-progress-label">
+                <span>${doneSelf.toFixed(1)} / ${totalSelf.toFixed(0)} hours completed</span>
+                <span>${selfPct}%</span>
+              </div>
+            </div>`;
+    }
+
+    const plan = generateDailyStudyPlan();
+    const dailyTarget = getCurrentDailyTarget();
+    const completed = appState.dailyProgress?.completed || 0;
+    const dailyPct = dailyTarget > 0 ? Math.min(100, Math.round((completed / dailyTarget) * 100)) : 0;
+
+    const fillEl = document.getElementById('daily-progress-fill');
+    const textEl = document.getElementById('daily-progress-text');
+    if (fillEl) fillEl.style.width = `${dailyPct}%`;
+    if (textEl) textEl.textContent = `${completed.toFixed(1)} / ${dailyTarget.toFixed(1)} hours (${dailyPct}%)`;
+
+    const cfg = appState.studyPlanConfig;
+    let phasePanel = `
+      <div class="study-phase-panel">
+        <h5>Study Phase</h5>
+        <div class="phase-btn-row">
+          <button class="phase-btn ${cfg.phase === 'lecture' ? 'active' : ''}" onclick="setStudyPhase('lecture')">Lecture Period</button>
+          <button class="phase-btn ${cfg.phase === 'midbreak' ? 'active' : ''}" onclick="setStudyPhase('midbreak')">Mid-Semester Break</button>
+          <button class="phase-btn ${cfg.phase === 'studyleave' ? 'active' : ''}" onclick="setStudyPhase('studyleave')">Study Leave</button>
+        </div>`;
+    if (cfg.phase === 'midbreak') {
+        phasePanel += `
+        <div class="phase-config-row">
+          <label>Break duration (days)
+            <input type="number" min="1" max="30" value="${cfg.midBreakDays}" onchange="updateStudyPlanConfig('midBreakDays', this.value)">
+          </label>
+          <label>Daily study hours during break
+            <input type="number" min="0" max="12" step="0.5" value="${cfg.midBreakDailyHours}" onchange="updateStudyPlanConfig('midBreakDailyHours', this.value)">
+          </label>
+          <span class="phase-hint">Set to 0 for a full vacation — no study hours counted.</span>
+        </div>`;
+    }
+    if (cfg.phase === 'studyleave') {
+        const lvTarget = getCurrentDailyTarget();
+        phasePanel += `
+        <div class="phase-config-row">
+          <label>Study leave duration (days)
+            <input type="number" min="1" max="60" value="${cfg.studyLeaveDays}" onchange="updateStudyPlanConfig('studyLeaveDays', this.value)">
+          </label>
+          <div class="phase-target-display">Daily target: ${lvTarget.toFixed(1)} hrs/day</div>
+        </div>`;
+    }
+    phasePanel += `</div>`;
+
+    let modulesHTML = '<div class="daily-module-list">';
+    plan.forEach(item => {
+        const modProgress = appState.dailyProgress?.moduleProgress?.[item.id] || 0;
+        const isChecked = appState.dailyProgress?.completedTasks?.includes(item.id);
+        const modPct = item.time > 0 ? Math.min(100, Math.round((modProgress / item.time) * 100)) : 0;
+        modulesHTML += `
+        <div class="daily-module-item ${isChecked ? 'completed' : ''}">
+          <div class="daily-module-item-header">
+            <div class="daily-module-check">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDailyTaskCompletion('${item.id}', ${item.time})">
+            </div>
+            <div class="daily-module-info">
+              <h4>${item.id} — ${item.name}</h4>
+              <p>Assigned today</p>
+            </div>
+            <div class="daily-module-time">${item.time.toFixed(1)}h</div>
+          </div>
+          <div class="daily-module-progress-label">
+            <span>Self-Study Progress</span>
+            <span>${modProgress.toFixed(1)} / ${item.time.toFixed(1)}h studied today</span>
+          </div>
+          <div class="daily-module-bar-track">
+            <div class="daily-module-bar-fill" style="width:${modPct}%;"></div>
+          </div>
+          <div class="daily-module-adjust-row">
+            <button class="btn-small-square" onclick="adjustDailyModuleProgress('${item.id}', -0.5, ${item.time})">− 30 min</button>
+            <button class="btn-small-square" onclick="adjustDailyModuleProgress('${item.id}', 0.5, ${item.time})">+ 30 min</button>
+          </div>
+        </div>`;
+    });
+    modulesHTML += '</div>';
+
+    planContainer.innerHTML = phasePanel + modulesHTML;
+}
+
+function startMidnightCountdown() {
+    if (midnightInterval) { clearInterval(midnightInterval); midnightInterval = null; }
+    function update() {
+        const el = document.getElementById('midnight-countdown');
+        if (!el) { clearInterval(midnightInterval); midnightInterval = null; return; }
+        const now = new Date();
+        const midnight = new Date(now); midnight.setHours(24, 0, 0, 0);
+        let diff = Math.floor((midnight - now) / 1000);
+        if (diff <= 0) { initializeDailyTracker(); renderDailyTracker(); return; }
+        const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+        const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        const s = String(diff % 60).padStart(2, '0');
+        el.textContent = `Resets in ${h}:${m}:${s}`;
+    }
+    update();
+    midnightInterval = setInterval(update, 1000);
+
+    setInterval(() => {
+        if (appState.dailyProgress && appState.dailyProgress.date !== new Date().toLocaleDateString()) {
+            initializeDailyTracker();
+            if (document.getElementById('daily-study-plan-container')) renderDailyTracker();
+        }
+    }, 30000);
+}
+
+window.setStudyPhase = function(phase) {
+    if (!appState.studyPlanConfig) initializeDailyTracker();
+    appState.studyPlanConfig.phase = phase;
+    saveProgress();
+    renderDailyTracker();
+};
+
+window.updateStudyPlanConfig = function(key, value) {
+    if (!appState.studyPlanConfig) initializeDailyTracker();
+    appState.studyPlanConfig[key] = isNaN(parseFloat(value)) ? value : parseFloat(value);
+    saveProgress();
+    renderDailyTracker();
+    if (sections.dashboard && sections.dashboard.classList.contains('active')) renderDashboard();
+};
+
+window.adjustDailyModuleProgress = function(moduleId, delta, maxTime) {
+    if (!appState.dailyProgress) initializeDailyTracker();
+    if (!appState.dailyProgress.moduleProgress) appState.dailyProgress.moduleProgress = {};
+    const current = appState.dailyProgress.moduleProgress[moduleId] || 0;
+    const newVal = Math.max(0, Math.min(maxTime, current + delta));
+    const actualDelta = newVal - current;
+    appState.dailyProgress.moduleProgress[moduleId] = newVal;
+    if (newVal >= maxTime && !appState.dailyProgress.completedTasks.includes(moduleId)) {
+        appState.dailyProgress.completedTasks.push(moduleId);
+    } else if (newVal < maxTime) {
+        appState.dailyProgress.completedTasks = appState.dailyProgress.completedTasks.filter(id => id !== moduleId);
+    }
+    appState.dailyProgress.completed = Object.values(appState.dailyProgress.moduleProgress).reduce((a, b) => a + b, 0);
+    if (appState.progress[moduleId]) {
+        const { course, year, semester } = appState;
+        const mod = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
+        if (mod) {
+            const targets = calculateTargets(mod);
+            appState.progress[moduleId].self = Math.max(0, Math.min(targets.self, (appState.progress[moduleId].self || 0) + actualDelta));
+        }
+    }
+    saveProgress();
+    renderDailyTracker();
+    if (sections.dashboard && sections.dashboard.classList.contains('active')) renderDashboard();
+};
+
+window.toggleDailyTaskCompletion = function(moduleId, time) {
+    if (!appState.dailyProgress) initializeDailyTracker();
+    if (!appState.dailyProgress.moduleProgress) appState.dailyProgress.moduleProgress = {};
+    const isChecked = appState.dailyProgress.completedTasks.includes(moduleId);
+    const { course, year, semester } = appState;
+    const mod = course ? COURSE_DATA[course]?.[year]?.[semester]?.find(m => m.id === moduleId) : null;
+    if (!isChecked) {
+        const prev = appState.dailyProgress.moduleProgress[moduleId] || 0;
+        const delta = time - prev;
+        appState.dailyProgress.moduleProgress[moduleId] = time;
+        appState.dailyProgress.completedTasks.push(moduleId);
+        if (mod && appState.progress[moduleId]) {
+            const targets = calculateTargets(mod);
+            appState.progress[moduleId].self = Math.max(0, Math.min(targets.self, (appState.progress[moduleId].self || 0) + delta));
+        }
+    } else {
+        const prev = appState.dailyProgress.moduleProgress[moduleId] || 0;
+        appState.dailyProgress.moduleProgress[moduleId] = 0;
+        appState.dailyProgress.completedTasks = appState.dailyProgress.completedTasks.filter(id => id !== moduleId);
+        if (mod && appState.progress[moduleId]) {
+            appState.progress[moduleId].self = Math.max(0, (appState.progress[moduleId].self || 0) - prev);
+        }
+    }
+    appState.dailyProgress.completed = Object.values(appState.dailyProgress.moduleProgress).reduce((a, b) => a + b, 0);
+    saveProgress();
+    renderDailyTracker();
+    if (sections.dashboard && sections.dashboard.classList.contains('active')) renderDashboard();
+};
+
+function connectTimerToDailyTracker(hrs, moduleId) {
+    if (!appState.dailyProgress) initializeDailyTracker();
+    if (!appState.dailyProgress.moduleProgress) appState.dailyProgress.moduleProgress = {};
+    if (moduleId) {
+        const plan = generateDailyStudyPlan();
+        const planItem = plan.find(p => p.id === moduleId);
+        const maxTime = planItem ? planItem.time : 9999;
+        const current = appState.dailyProgress.moduleProgress[moduleId] || 0;
+        const newVal = Math.min(maxTime, current + hrs);
+        appState.dailyProgress.moduleProgress[moduleId] = newVal;
+        if (newVal >= maxTime && !appState.dailyProgress.completedTasks.includes(moduleId)) {
+            appState.dailyProgress.completedTasks.push(moduleId);
+        }
+        if (appState.progress[moduleId]) {
+            const { course, year, semester } = appState;
+            const mod = COURSE_DATA[course][year][semester].find(m => m.id === moduleId);
+            if (mod) {
+                const targets = calculateTargets(mod);
+                appState.progress[moduleId].self = Math.max(0, Math.min(targets.self, (appState.progress[moduleId].self || 0) + hrs));
+            }
+        }
+        appState.dailyProgress.completed = Object.values(appState.dailyProgress.moduleProgress).reduce((a, b) => a + b, 0);
+    } else {
+        appState.dailyProgress.completed = Math.max(0, appState.dailyProgress.completed + hrs);
+    }
+    saveProgress();
+    if (document.getElementById('daily-study-plan-container')) renderDailyTracker();
+    if (sections.dashboard && sections.dashboard.classList.contains('active')) renderDashboard();
+}
+
+// ===== GPA CALCULATOR =====
+
+const GRADE_POINTS = {
+    'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+    'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+    'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+    'D+': 1.3, 'D': 1.0, 'F': 0.0, 'N/A': null
+};
+
+window.loadGpaModules = function() {
+    const year = document.getElementById('gpa-year-select').value;
+    const semester = document.getElementById('gpa-semester-select').value;
+    if (!year || !semester) { alert('Please select a year and semester.'); return; }
+    const course = appState.course || 'CS';
+    if (!COURSE_DATA[course]?.[year]?.[semester]) { alert('No module data found.'); return; }
+    const modules = COURSE_DATA[course][year][semester];
+    let html = '<div class="gpa-table-wrap"><table class="gpa-table"><thead><tr><th>Module</th><th>Name</th><th>Credits</th><th>Grade</th></tr></thead><tbody>';
+    modules.forEach(m => {
+        const credits = (m.lectureCredits || 0) + (m.practicalCredits || 0);
+        html += `<tr>
+        <td><span class="mod-id">${m.id}</span></td>
+        <td style="font-size:0.85rem;color:var(--text-muted);">${m.name}</td>
+        <td style="text-align:center;font-weight:600;">${credits}</td>
+        <td><select class="gpa-grade-select" data-module="${m.id}" data-credits="${credits}" onchange="recalculateGpa()">
+          <option value="N/A">— Not yet —</option>
+          <option value="A+">A+</option><option value="A">A</option><option value="A-">A-</option>
+          <option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+          <option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option>
+          <option value="D+">D+</option><option value="D">D</option><option value="F">F</option>
+        </select></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+    html += '<div style="margin-top:1.25rem;text-align:right;"><button class="btn-primary" onclick="recalculateGpa()">Calculate GPA</button></div>';
+    document.getElementById('gpa-modules-container').innerHTML = html;
+    document.getElementById('gpa-result-container').style.display = 'none';
+    document.getElementById('gpa-target-section').style.display = 'none';
+};
+
+window.recalculateGpa = function() {
+    const selects = document.querySelectorAll('.gpa-grade-select');
+    if (!selects.length) return;
+    let totalPoints = 0, gradedCredits = 0, allCredits = 0;
+    selects.forEach(sel => {
+        const grade = sel.value;
+        const credits = parseInt(sel.dataset.credits) || 0;
+        const moduleId = sel.dataset.module || '';
+        allCredits += credits;
+        if (moduleId.startsWith('ENH')) return; // Enhancement modules excluded from GPA
+        if (grade !== 'N/A' && GRADE_POINTS[grade] !== null) {
+            totalPoints += GRADE_POINTS[grade] * credits;
+            gradedCredits += credits;
+        }
+    });
+    const gpa = gradedCredits > 0 ? (totalPoints / gradedCredits) : 0;
+    document.getElementById('gpa-result-value').textContent = gpa.toFixed(2);
+    document.getElementById('gpa-total-credits').textContent = allCredits;
+    document.getElementById('gpa-graded-credits').textContent = gradedCredits;
+    document.getElementById('gpa-result-container').style.display = 'block';
+    document.getElementById('gpa-target-section').style.display = 'block';
+    window._currentCalculatedGpa = gpa;
+};
+
+window.calculateTargetGpa = function() {
+    const currentGpa = window._currentCalculatedGpa;
+    if (currentGpa === undefined) { alert('Please calculate your GPA first.'); return; }
+    const semestersDone = parseInt(document.getElementById('gpa-semesters-done').value) || 1;
+    const targetGpa = parseFloat(document.getElementById('gpa-target-value').value);
+    if (isNaN(targetGpa) || targetGpa < 0 || targetGpa > 4) { alert('Please enter a valid target GPA between 0.00 and 4.00.'); return; }
+    const neededGpa = targetGpa * (semestersDone + 1) - currentGpa * semestersDone;
+    const resultDiv = document.getElementById('gpa-target-result');
+    if (neededGpa > 4.0) {
+        resultDiv.innerHTML = `<div class="gpa-target-box gpa-target-impossible"><strong>Not achievable in one semester.</strong><br>You would need ${neededGpa.toFixed(2)}, which exceeds the maximum of 4.00.</div>`;
+    } else if (neededGpa < 0) {
+        resultDiv.innerHTML = `<div class="gpa-target-box gpa-target-easy"><strong>Already achieved!</strong><br>Your current GPA of ${currentGpa.toFixed(2)} already exceeds your target of ${targetGpa.toFixed(2)}.</div>`;
+    } else {
+        resultDiv.innerHTML = `<div class="gpa-target-box gpa-target-normal"><strong>Required GPA next semester: ${neededGpa.toFixed(2)}</strong><br>To reach a cumulative GPA of ${targetGpa.toFixed(2)} after ${semestersDone + 1} semesters, score <strong>${neededGpa.toFixed(2)}</strong> next semester.</div>`;
+    }
+};
