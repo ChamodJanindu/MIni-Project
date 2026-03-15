@@ -107,7 +107,7 @@ header {
 .nav-links-wrapper {
     position: relative;
     display: flex;
-    gap: 0.5rem;
+    gap: 0.15rem;
     background: rgba(255, 255, 255, 0.03);
     padding: 6px;
     border-radius: 100px;
@@ -124,13 +124,13 @@ header {
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.4rem;
     background: transparent !important;
     border: none;
-    padding: 0.7rem 1.25rem;
+    padding: 0.7rem 0.75rem;
     border-radius: 100px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
@@ -185,6 +185,80 @@ header {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+/* Theme Switch Button */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 34px;
+    position: relative;
+    width: 60px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: var(--bg-input);
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 24px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 24px;
+    z-index: 2;
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider .sun, .slider .moon {
+    color: var(--text-muted);
+    transition: .4s;
+}
+
+input:checked + .slider .sun {
+    color: #fff;
+}
+
+input:not(:checked) + .slider .moon {
+    color: var(--accent-primary);
 }
 
 .action-icon-btn {
@@ -977,29 +1051,23 @@ select.timer-input:focus {
 /* World-Class Energy Bar (Pill Hype Style) */
 .energy-bar-container {
     display: flex;
-    gap: 4px;
     width: 100%;
-    height: 18px; /* Slightly taller for more presence */
-    margin-top: 1rem;
+    height: 14px;
+    margin-top: 0.75rem;
     align-items: center;
-    background: rgba(255, 255, 255, 0.02);
-    padding: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 3px;
     border-radius: 100px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="light"] .energy-bar-container {
-    background: rgba(0, 0, 0, 0.02);
-    border-color: rgba(0, 0, 0, 0.05);
 }
 
 .energy-segment {
     flex: 1;
     height: 100%;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 100px; /* Fully rounded pillars */
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
+    border-radius: 2px;
+    margin: 0 1px; /* Small margin instead of large gap */
+    transition: all 0.4s ease;
 }
 
 /* Active State with Neon Glow */
@@ -1074,340 +1142,946 @@ select.timer-input:focus {
 /* World-Class Achievements UI */
 .badges-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2.5rem;
 }
 
 .badge-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-lg);
-    padding: 2rem 1.5rem;
+    border-radius: 24px;
+    padding: 2.5rem 1.5rem;
     text-align: center;
-    transition: var(--transition-smooth);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.badge-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent 0%, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%, transparent 100%);
+    animation: rotateCard 10s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotateCard {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .badge-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-12px) scale(1.02);
     border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .badge-icon {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 0.5rem;
     position: relative;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+    transition: all 0.5s ease;
 }
 
-.badge-icon::after {
-    content: '';
-    position: absolute;
-    inset: -5px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    opacity: 0.3;
+/* Curriculum Styles */
+.hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.curriculum-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.filter-btn {
+    background-color: #e9ecef;
+    color: var(--text-color);
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.curriculum-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.curriculum-year {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.curriculum-year h4 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    background: #f0f7ff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.curriculum-semester {
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+}
+
+.curriculum-semester h5 {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.curriculum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.curriculum-table th, .curriculum-table td {
+    text-align: left;
+    padding: 0.8rem;
+    border-bottom: 1px solid #eee;
+}
+
+.curriculum-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.curriculum-table tr:hover {
+    background-color: #fcfcfc;
+}
+
+.badge-card:hover .badge-icon {
+    transform: scale(1.1) rotate(10deg);
 }
 
 /* Badge Levels */
 .badge-bronze .badge-icon {
-    background: linear-gradient(135deg, #cd7f32, #a0522d);
-    color: #fff;
+    background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
+    box-shadow: 0 0 20px rgba(205, 127, 50, 0.4);
 }
-.badge-bronze.active { filter: drop-shadow(0 0 15px rgba(205, 127, 50, 0.4)); }
+.badge-bronze.active { filter: drop-shadow(0 0 25px rgba(205, 127, 50, 0.3)); }
 
 .badge-silver .badge-icon {
-    background: linear-gradient(135deg, #c0c0c0, #808080);
-    color: #fff;
+    background: linear-gradient(135deg, #e0e0e0 0%, #808080 100%);
+    box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
 }
-.badge-silver.active { filter: drop-shadow(0 0 15px rgba(192, 192, 192, 0.4)); }
+.badge-silver.active { filter: drop-shadow(0 0 25px rgba(192, 192, 192, 0.3)); }
 
 .badge-gold .badge-icon {
-    background: linear-gradient(135deg, #ffd700, #b8860b);
-    color: #000;
+    background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
 }
-.badge-gold.active { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)); }
+.badge-gold.active { filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.4)); }
 
 .badge-platinum .badge-icon {
-    background: linear-gradient(135deg, #e5e4e2, #b0c4de);
-    color: #000;
+    background: linear-gradient(135deg, #ffffff 0%, #b0c4de 100%);
+    box-shadow: 0 0 30px rgba(229, 228, 226, 0.6);
 }
-.badge-platinum.active { filter: drop-shadow(0 0 20px rgba(229, 228, 226, 0.6)); }
+.badge-platinum.active { filter: drop-shadow(0 0 40px rgba(229, 228, 226, 0.5)); }
 
 .badge-name {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    margin-bottom: 0.25rem;
+    color: #fff;
+    letter-spacing: -0.01em;
 }
 
 .badge-desc {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
-.badge-card.locked {
-    opacity: 0.4;
-    filter: grayscale(1);
-}
-
-/* Next-Level Advanced Curriculum UI */
-.curriculum-roadmap {
+/* Horizontal Branching Neural Past Papers UI */
+.branch-container {
     position: relative;
+    width: 100%;
+    margin: 2rem 0;
     padding: 2rem 0;
-}
-
-/* Central Timeline Line */
-.curriculum-roadmap::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 40px;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(to bottom, 
-        transparent, 
-        var(--accent-primary) 10%, 
-        var(--accent-secondary) 50%, 
-        var(--accent-primary) 90%, 
-        transparent);
-    opacity: 0.3;
-}
-
-.roadmap-year-section {
-    position: relative;
-    margin-bottom: 5rem;
-}
-
-.roadmap-year-header {
+    overflow-x: auto;
+    overflow-y: hidden;
     display: flex;
     align-items: center;
-    gap: 2rem;
-    margin-bottom: 3rem;
+    min-height: 220px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
 }
 
-.year-node {
-    width: 80px;
-    height: 80px;
-    background: var(--bg-card);
-    border: 2px solid var(--accent-primary);
-    border-radius: 20px;
+/* The Horizontal Trunk */
+.branch-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 3px;
+    background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary), var(--accent-success));
+    transform: translateY(-50%);
+    border-radius: 2px;
+    opacity: 0.3;
+    z-index: 1;
+}
+
+.branch-item {
+    position: relative;
+    flex: 0 0 100px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+/* Alternating Branches (Up/Down) */
+.branch-item.up {
+    transform: translateY(-50px);
+}
+
+.branch-item.down {
+    transform: translateY(50px);
+}
+
+/* Vertical Connecting Line to Horizontal Trunk */
+.branch-item::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 2px;
+    background: var(--border-subtle);
+    transition: all 0.4s ease;
+    z-index: 1;
+}
+
+.branch-item.up::after {
+    top: 50%;
+    height: 50px;
+    transform: translateY(0);
+}
+
+.branch-item.down::after {
+    bottom: 50%;
+    height: 50px;
+    transform: translateY(0);
+}
+
+.branch-node {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 2;
-    box-shadow: 0 0 30px rgba(88, 166, 255, 0.2);
-    transform: rotate(45deg);
-}
-
-.year-node span {
-    transform: rotate(-45deg);
-    font-weight: 800;
-    font-size: 1.2rem;
-    color: var(--accent-primary);
-}
-
-.year-title {
-    font-size: 2.5rem;
-    font-weight: 900;
-    letter-spacing: -0.05em;
-    background: linear-gradient(135deg, var(--text-main) 0%, var(--text-muted) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.roadmap-semesters {
-    display: flex;
-    flex-direction: column;
-    gap: 4rem;
-    padding-left: 100px;
-}
-
-.semester-stage {
+    background: #161b22;
+    backdrop-filter: var(--glass-blur);
+    border: 2px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 0.6rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 80px;
+    height: 80px;
     position: relative;
+    z-index: 3;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
-.semester-stage::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -60px;
-    width: 40px;
-    height: 2px;
-    background: var(--border-subtle);
-}
-
-.semester-title-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.semester-badge {
-    background: rgba(188, 140, 255, 0.1);
-    color: var(--accent-secondary);
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    border: 1px solid rgba(188, 140, 255, 0.2);
-}
-
-.roadmap-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
-
-.roadmap-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-}
-
-.roadmap-card::after {
-    content: '';
-    position: absolute;
-    top: 0; right: 0; width: 40px; height: 40px;
-    background: linear-gradient(135deg, transparent 50%, rgba(88, 166, 255, 0.1) 50%);
-    transition: all 0.3s;
-}
-
-.roadmap-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: var(--accent-primary);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="light"] .roadmap-card:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.roadmap-card:hover::after {
-    transform: scale(2);
-    opacity: 0.5;
-}
-
-.roadmap-card .mod-id {
-    font-family: 'monospace';
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: var(--accent-primary);
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.roadmap-card .mod-name {
+.branch-node .year-val {
     font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 1rem;
-    color: var(--text-main);
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
-.roadmap-card .mod-stats {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.7rem;
+.branch-node .status-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    margin-top: 0.3rem;
     color: var(--text-muted);
-    font-weight: 600;
 }
 
-.stat-pill {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
+/* Done State */
+.branch-item.done::after {
+    background: var(--accent-success);
+    width: 3px;
+    box-shadow: 0 0 15px var(--accent-success);
 }
 
-[data-theme="light"] .stat-pill {
-    background: rgba(0, 0, 0, 0.05);
+.branch-node.done {
+    border-color: var(--accent-success);
+    background: rgba(63, 185, 80, 0.15);
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(63, 185, 80, 0.3);
 }
 
-/* Jaw-Dropping Animations */
+.branch-node.done .year-val {
+    color: #fff;
+    text-shadow: 0 0 15px var(--accent-success);
+}
+
+.branch-node.done .status-label {
+    color: var(--accent-success);
+}
+
+/* Achievement Visibility Fixes */
+.badge-card {
+    background: rgba(22, 27, 34, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.badge-name {
+    color: #fff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.badge-desc {
+    color: #babbbd !important; /* Brighter muted text */
+    font-weight: 600 !important;
+}
+
+/* HOLOGRAPHIC DEEP-SPACE CURRICULUM UI */
+#curriculum-section {
+    background: #000 !important;
+    overflow: hidden !important;
+}
+
+#curriculum-display {
+    padding: 100px 0 !important;
+}
+
+.curriculum-roadmap {
+    position: relative !important;
+    perspective: 2000px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+}
+
+/* Holographic Beam Timeline */
+.curriculum-roadmap::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    width: 2px !important;
+    height: 100% !important;
+    background: linear-gradient(to bottom, transparent, #00d2ff, #bc8cff, #00ffa3, #ff4d4d, transparent) !important;
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.5) !important;
+    z-index: 1 !important;
+    transform: translateX(-50%) !important;
+}
+
+/* Roadmap Entrance Animation */
 .roadmap-year-section {
+    margin-bottom: 150px !important;
+    position: relative !important;
+    z-index: 2 !important;
     opacity: 0;
-    transform: translateX(-20px);
-    transition: all 0.8s ease-out;
+    transform: translateY(50px) scale(0.95);
+    transition: all 1s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 
 .roadmap-year-section.visible {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
 }
 
-@media (max-width: 768px) {
-    .curriculum-roadmap::before { left: 20px; }
-    .roadmap-year-header { gap: 1rem; }
-    .year-node { width: 50px; height: 50px; border-radius: 12px; }
-    .year-node span { font-size: 0.9rem; }
-    .year-title { font-size: 1.8rem; }
-    .roadmap-semesters { padding-left: 50px; }
-    .semester-stage::before { left: -30px; width: 20px; }
+.roadmap-year-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+    margin-bottom: 60px !important;
 }
 
-/* Autumn Leaves Animation */
+/* THE HOLOGRAPHIC DIAMOND */
+.year-node {
+    width: 120px !important;
+    height: 120px !important;
+    background: rgba(0, 210, 255, 0.05) !important;
+    border: 2px solid #00d2ff !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: rotate(45deg) translateZ(50px) !important;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    position: relative !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.3) !important;
+    transform-style: preserve-3d !important;
+}
+
+.year-node.done {
+    background: var(--h-color, #00d2ff) !important;
+    box-shadow: 0 0 50px var(--h-color, #00d2ff) !important;
+}
+
+.year-node.done span {
+    color: #000 !important;
+    text-shadow: none !important;
+}
+
+.year-node-y1 { --h-color: #00d2ff; }
+.year-node-y2 { --h-color: #bc8cff; }
+.year-node-y3 { --h-color: #00ffa3; }
+.year-node-y4 { --h-color: #ff4d4d; }
+
+.year-node { border-color: var(--h-color) !important; box-shadow: 0 0 30px var(--h-color) !important; }
+
+/* Falling Leaves Animation */
 #leaves-container {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
+    z-index: 1000;
     overflow: hidden;
-    z-index: 10000;
 }
 
 .leaf {
     position: absolute;
-    width: 25px;
-    height: 25px;
-    opacity: 0.8;
-    animation: falling 10s linear infinite;
-    border-radius: 2px 20px; /* Leaf Shape */
+    top: -20px;
+    border-radius: 2px 10px 2px 10px;
+    animation-name: leafFall;
+    animation-timing-function: linear;
 }
 
-@keyframes falling {
-    0% { transform: translate(0, -50px) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.8; }
-    90% { opacity: 0.8; }
-    100% { transform: translate(100px, 100vh) rotate(360deg); opacity: 0; }
+@keyframes leafFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        transform: translateY(110vh) rotate(360deg);
+    }
 }
 
-/* Animations */
-.app-footer {
-    padding: 4rem 0;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
+/* Holographic Glitch Rings */
+.year-node::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: -10px !important;
+    border: 1px solid var(--h-color) !important;
+    border-radius: 25px !important;
+    opacity: 0.3 !important;
+    animation: hologramSpin 4s linear infinite !important;
 }
 
-.animate-up { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes hologramSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.year-node span {
+    transform: rotate(-45deg) !important;
+    font-weight: 900 !important;
+    font-size: 2.5rem !important;
+    color: #fff !important;
+    text-shadow: 0 0 15px var(--h-color) !important;
 }
 
-.hidden { display: none !important; }
+.year-node:hover {
+    transform: rotate(225deg) scale(1.2) translateZ(100px) !important;
+    background: var(--h-color) !important;
+}
 
-@media (max-width: 768px) {
-    #landing-section h2 { font-size: 2.5rem; }
-    .form-row { grid-template-columns: 1fr; }
-    .timer-controls-panel { padding: 2rem; }
+.year-node:hover span {
+    transform: rotate(-225deg) !important;
+    color: #000 !important;
+    text-shadow: none !important;
+}
+
+/* TITANIC YEAR TITLES */
+.year-title {
+    font-size: 6rem !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    letter-spacing: -5px !important;
+    margin: 0 !important;
+    text-transform: uppercase !important;
+    opacity: 0.8 !important;
+    transition: all 0.5s ease !important;
+}
+
+.roadmap-year-header:hover .year-title {
+    opacity: 1 !important;
+    letter-spacing: 5px !important;
+    color: var(--h-color) !important;
+}
+
+/* SEMESTER GRID */
+.roadmap-semesters {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+    padding: 0 20px !important;
+}
+
+.semester-stage {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 30px !important;
+    padding: 30px !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.semester-badge {
+    display: inline-block !important;
+    padding: 10px 25px !important;
+    background: var(--h-color) !important;
+    color: #000 !important;
+    border-radius: 50px !important;
+    font-weight: 900 !important;
+    font-size: 1rem !important;
+    margin-bottom: 30px !important;
+}
+
+.roadmap-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+}
+
+/* HOLOGRAPHIC CARDS */
+.roadmap-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-left: 4px solid var(--h-color) !important;
+    padding: 24px !important;
+    border-radius: 12px !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    cursor: default !important;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.roadmap-card:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    transform: translateX(15px) scale(1.02) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.roadmap-card .mod-id {
+    color: var(--h-color) !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.roadmap-card .mod-name {
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.roadmap-card:hover .mod-name {
+    color: var(--h-color) !important;
+    text-shadow: 0 0 15px var(--h-color);
+}
+
+@media (max-width: 900px) {
+    .roadmap-semesters { grid-template-columns: 1fr !important; }
+    .year-title { font-size: 3rem !important; }
+}
+
+/* ===== Light Mode: Roadmap & Past Papers Fixes ===== */
+[data-theme="light"] .year-title {
+    color: #1a1a2e !important;
+}
+[data-theme="light"] .roadmap-year-header:hover .year-title {
+    color: var(--h-color) !important;
+}
+[data-theme="light"] .semester-stage {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"] .roadmap-card {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .roadmap-card:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .roadmap-card .mod-name {
+    color: #1a1a2e !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .roadmap-card:hover .mod-name {
+    color: var(--h-color) !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .branch-node {
+    background: #f0f2f5 !important;
+    border-color: var(--border-subtle) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+}
+[data-theme="light"] .branch-node .year-val {
+    color: #1a1a2e !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .branch-node.done {
+    background: rgba(63, 185, 80, 0.35) !important;
+    border-color: #2ea84a !important;
+    border-width: 3px !important;
+    box-shadow: 0 0 18px rgba(46, 168, 74, 0.5) !important;
+}
+[data-theme="light"] .branch-node.done .year-val {
+    color: #1a1a2e !important;
+    text-shadow: none !important;
+}
+[data-theme="light"] .branch-node.done .status-label {
+    color: #1a6e2a !important;
+}
+[data-theme="light"] .badge-name {
+    color: #fff !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4) !important;
+}
+
+.daily-tracker-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  backdrop-filter: var(--glass-blur);
+}
+.daily-progress-container { margin-top: 1.5rem; }
+.daily-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.daily-progress-bar-large {
+  width: 100%;
+  height: 32px;
+  background: var(--bg-input);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.daily-progress-fill {
+  height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  box-shadow: 0 0 16px rgba(88, 166, 255, 0.35);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.midnight-countdown-wrap {
+  text-align: center;
+  margin: 0.75rem 0 1.25rem;
+}
+#midnight-countdown {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  display: inline-block;
+}
+.semester-progress-section { margin: 1.75rem 0 1rem; }
+.semester-progress-section .section-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.semester-progress-bar-track {
+  width: 100%;
+  height: 20px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.semester-progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--accent-success), #58d68d);
+  box-shadow: 0 0 12px rgba(63, 185, 80, 0.35);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.semester-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+.study-phase-panel {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.study-phase-panel h5 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.9rem;
+}
+.phase-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.phase-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.phase-btn.active, .phase-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(88,166,255,0.08);
+}
+.phase-config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.phase-config-row label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.phase-config-row input[type="number"] {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  width: 100%;
+  max-width: 180px;
+  outline: none;
+}
+.phase-config-row input[type="number"]:focus { border-color: var(--accent-primary); }
+.phase-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.phase-target-display {
+  font-size: 0.88rem;
+  color: var(--accent-secondary);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.daily-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.daily-module-item {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  transition: var(--transition-smooth);
+}
+.daily-module-item.completed { border-color: var(--accent-success); opacity: 0.75; }
+.daily-module-item-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.daily-module-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.daily-module-info { flex: 1; }
+.daily-module-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.15rem;
+}
+.daily-module-info p { font-size: 0.78rem; color: var(--text-muted); }
+.daily-module-time {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-secondary);
+  white-space: nowrap;
+}
+.daily-module-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.daily-module-bar-track {
+  width: 100%;
+  height: 22px;
+  background: var(--bg-card);
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.daily-module-bar-fill {
+  height: 100%;
+  border-radius: 11px;
+  background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+  box-shadow: 0 0 12px rgba(188,140,255,0.4);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.daily-module-adjust-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  justify-content: flex-end;
+}
+/* ===== GPA Calculator ===== */
+.gpa-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+.gpa-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.gpa-table thead tr { background: var(--bg-input); }
+.gpa-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.gpa-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+.gpa-table tbody tr:last-child td { border-bottom: none; }
+.gpa-table tbody tr:hover { background: var(--bg-input); }
+.gpa-grade-select {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  width: 100%;
+  max-width: 140px;
+}
+.gpa-grade-select:focus { outline: none; border-color: var(--accent-primary); }
+.gpa-target-box {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.gpa-target-normal {
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.3);
+  color: var(--text-main);
+}
+.gpa-target-impossible {
+  background: rgba(248,81,73,0.08);
+  border: 1px solid rgba(248,81,73,0.3);
+  color: var(--text-main);
+}
+.gpa-target-easy {
+  background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.3);
+  color: var(--text-main);
+}
+/* ===== Reset Buttons ===== */
+.module-reset-row { margin-top: 1rem; text-align: right; }
+.btn-reset-module {
+  background: transparent;
+  border: 1px solid rgba(248,81,73,0.4);
+  color: var(--accent-danger);
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-reset-module:hover {
+  background: rgba(248,81,73,0.1);
+  border-color: var(--accent-danger);
+}
+.btn-reset-all {
+  background: transparent;
+  border: 1px solid rgba(248,81,73,0.5);
+  color: var(--accent-danger);
+  padding: 0.45rem 1.1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-reset-all:hover {
+  background: rgba(248,81,73,0.12);
+  border-color: var(--accent-danger);
 }
