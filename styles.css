@@ -671,25 +671,41 @@ select:focus, input:focus {
 }
 
 .btn-small-square {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-subtle);
-    border-radius: 6px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
     color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: var(--transition-smooth);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
-[data-theme="light"] .btn-small-square { background: rgba(0, 0, 0, 0.05); }
+[data-theme="light"] .btn-small-square {
+    background: linear-gradient(145deg, #ffffff, #f0f2f5);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    color: #1a1a2e;
+}
 
 .btn-small-square:hover {
     background: var(--accent-primary);
     color: #fff;
     border-color: var(--accent-primary);
+    transform: translateY(-3px) scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
+}
+
+.btn-small-square:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
 }
 
 /* Timer Workspace */
@@ -1051,23 +1067,29 @@ select.timer-input:focus {
 /* World-Class Energy Bar (Pill Hype Style) */
 .energy-bar-container {
     display: flex;
+    gap: 4px;
     width: 100%;
-    height: 14px;
-    margin-top: 0.75rem;
+    height: 18px; /* Slightly taller for more presence */
+    margin-top: 1rem;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 3px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 4px;
     border-radius: 100px;
     border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .energy-bar-container {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.05);
 }
 
 .energy-segment {
     flex: 1;
     height: 100%;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
-    margin: 0 1px; /* Small margin instead of large gap */
-    transition: all 0.4s ease;
+    border-radius: 100px; /* Fully rounded pillars */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
 }
 
 /* Active State with Neon Glow */
@@ -1412,6 +1434,42 @@ select.timer-input:focus {
     position: relative;
     z-index: 3;
     box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    user-select: none;
+}
+
+.branch-node:active {
+    transform: scale(0.9) !important;
+}
+
+.branch-node.pop-animation {
+    animation: satisfyingPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes satisfyingPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.branch-node::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: var(--accent-success);
+    opacity: 0;
+    z-index: -1;
+    transition: all 0.4s ease;
+}
+
+.branch-node.done::before {
+    opacity: 0.1;
+    animation: pulseRipple 2s infinite;
+}
+
+@keyframes pulseRipple {
+    0% { transform: scale(1); opacity: 0.3; }
+    100% { transform: scale(1.4); opacity: 0; }
 }
 
 .branch-node .year-val {
@@ -1469,281 +1527,252 @@ select.timer-input:focus {
     font-weight: 600 !important;
 }
 
-/* HOLOGRAPHIC DEEP-SPACE CURRICULUM UI */
-#curriculum-section {
-    background: #000 !important;
-    overflow: hidden !important;
-}
-
-#curriculum-display {
-    padding: 100px 0 !important;
-}
-
+/* Next-Level Advanced Curriculum UI */
 .curriculum-roadmap {
-    position: relative !important;
-    perspective: 2000px !important;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
+    position: relative;
+    padding: 2rem 0;
 }
 
-/* Holographic Beam Timeline */
+/* Central Timeline Line - ENHANCED GLOW */
 .curriculum-roadmap::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 50% !important;
-    width: 2px !important;
-    height: 100% !important;
-    background: linear-gradient(to bottom, transparent, #00d2ff, #bc8cff, #00ffa3, #ff4d4d, transparent) !important;
-    box-shadow: 0 0 20px rgba(0, 210, 255, 0.5) !important;
-    z-index: 1 !important;
-    transform: translateX(-50%) !important;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 40px;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        var(--accent-primary) 10%, 
+        var(--accent-secondary) 50%, 
+        var(--accent-primary) 90%, 
+        transparent);
+    opacity: 0.6;
+    box-shadow: 0 0 15px var(--accent-primary), 0 0 30px var(--accent-secondary);
 }
 
-/* Roadmap Entrance Animation */
 .roadmap-year-section {
-    margin-bottom: 150px !important;
-    position: relative !important;
-    z-index: 2 !important;
-    opacity: 0;
-    transform: translateY(50px) scale(0.95);
-    transition: all 1s cubic-bezier(0.23, 1, 0.32, 1) !important;
-}
-
-.roadmap-year-section.visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    position: relative;
+    margin-bottom: 5rem;
 }
 
 .roadmap-year-header {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 20px !important;
-    margin-bottom: 60px !important;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
 }
 
-/* THE HOLOGRAPHIC DIAMOND */
 .year-node {
-    width: 120px !important;
-    height: 120px !important;
-    background: rgba(0, 210, 255, 0.05) !important;
-    border: 2px solid #00d2ff !important;
-    border-radius: 20px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transform: rotate(45deg) translateZ(50px) !important;
-    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    position: relative !important;
-    cursor: pointer !important;
-    box-shadow: 0 0 30px rgba(0, 210, 255, 0.3) !important;
-    transform-style: preserve-3d !important;
-}
-
-.year-node.done {
-    background: var(--h-color, #00d2ff) !important;
-    box-shadow: 0 0 50px var(--h-color, #00d2ff) !important;
-}
-
-.year-node.done span {
-    color: #000 !important;
-    text-shadow: none !important;
-}
-
-.year-node-y1 { --h-color: #00d2ff; }
-.year-node-y2 { --h-color: #bc8cff; }
-.year-node-y3 { --h-color: #00ffa3; }
-.year-node-y4 { --h-color: #ff4d4d; }
-
-.year-node { border-color: var(--h-color) !important; box-shadow: 0 0 30px var(--h-color) !important; }
-
-/* Falling Leaves Animation */
-#leaves-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 1000;
-    overflow: hidden;
-}
-
-.leaf {
-    position: absolute;
-    top: -20px;
-    border-radius: 2px 10px 2px 10px;
-    animation-name: leafFall;
-    animation-timing-function: linear;
-}
-
-@keyframes leafFall {
-    0% {
-        transform: translateY(0) rotate(0deg);
-    }
-    100% {
-        transform: translateY(110vh) rotate(360deg);
-    }
-}
-
-/* Holographic Glitch Rings */
-.year-node::before {
-    content: '' !important;
-    position: absolute !important;
-    inset: -10px !important;
-    border: 1px solid var(--h-color) !important;
-    border-radius: 25px !important;
-    opacity: 0.3 !important;
-    animation: hologramSpin 4s linear infinite !important;
-}
-
-@keyframes hologramSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.year-node span {
-    transform: rotate(-45deg) !important;
-    font-weight: 900 !important;
-    font-size: 2.5rem !important;
-    color: #fff !important;
-    text-shadow: 0 0 15px var(--h-color) !important;
+    width: 80px;
+    height: 80px;
+    background: var(--bg-card);
+    border: 2px solid var(--accent-primary);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 0 25px rgba(88, 166, 255, 0.4), inset 0 0 10px rgba(88, 166, 255, 0.2);
+    transform: rotate(45deg);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .year-node:hover {
-    transform: rotate(225deg) scale(1.2) translateZ(100px) !important;
-    background: var(--h-color) !important;
+    transform: rotate(45deg) scale(1.1);
+    box-shadow: 0 0 40px var(--accent-primary);
+    border-color: #fff;
 }
 
-.year-node:hover span {
-    transform: rotate(-225deg) !important;
-    color: #000 !important;
-    text-shadow: none !important;
+.year-node span {
+    transform: rotate(-45deg);
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--accent-primary);
+    text-shadow: 0 0 10px var(--accent-primary);
 }
 
-/* TITANIC YEAR TITLES */
 .year-title {
-    font-size: 6rem !important;
-    font-weight: 900 !important;
-    color: #fff !important;
-    letter-spacing: -5px !important;
-    margin: 0 !important;
-    text-transform: uppercase !important;
-    opacity: 0.8 !important;
-    transition: all 0.5s ease !important;
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
 }
 
-.roadmap-year-header:hover .year-title {
-    opacity: 1 !important;
-    letter-spacing: 5px !important;
-    color: var(--h-color) !important;
-}
-
-/* SEMESTER GRID */
 .roadmap-semesters {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 40px !important;
-    padding: 0 20px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    padding-left: 100px;
 }
 
 .semester-stage {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    border-radius: 30px !important;
-    padding: 30px !important;
-    backdrop-filter: blur(10px) !important;
+    position: relative;
+}
+
+.semester-stage::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -60px;
+    width: 40px;
+    height: 2px;
+    background: var(--accent-primary);
+    opacity: 0.4;
+    box-shadow: 0 0 10px var(--accent-primary);
+}
+
+.semester-title-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .semester-badge {
-    display: inline-block !important;
-    padding: 10px 25px !important;
-    background: var(--h-color) !important;
-    color: #000 !important;
-    border-radius: 50px !important;
-    font-weight: 900 !important;
-    font-size: 1rem !important;
-    margin-bottom: 30px !important;
+    background: rgba(188, 140, 255, 0.15);
+    color: var(--accent-secondary);
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: 1px solid rgba(188, 140, 255, 0.3);
+    box-shadow: 0 0 15px rgba(188, 140, 255, 0.2);
 }
 
 .roadmap-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
 }
 
-/* HOLOGRAPHIC CARDS */
 .roadmap-card {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-left: 4px solid var(--h-color) !important;
-    padding: 24px !important;
-    border-radius: 12px !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    cursor: default !important;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
 }
 
+.roadmap-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(88, 166, 255, 0.05), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.8s;
+}
+
+.roadmap-card:hover::before {
+    transform: translateX(100%);
+}
+
+.roadmap-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; width: 60px; height: 60px;
+    background: linear-gradient(135deg, transparent 50%, rgba(88, 166, 255, 0.15) 50%);
+    transition: all 0.4s;
+}
+
 .roadmap-card:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    transform: translateX(15px) scale(1.02) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transform: translateY(-10px) scale(1.03);
+    border-color: var(--accent-primary);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(88, 166, 255, 0.2);
+}
+
+[data-theme="light"] .roadmap-card:hover {
+    box-shadow: 0 20px 40px rgba(88, 166, 255, 0.15);
+}
+
+.roadmap-card:hover::after {
+    transform: scale(2.5);
+    opacity: 0.8;
 }
 
 .roadmap-card .mod-id {
-    color: var(--h-color) !important;
-    font-weight: 800 !important;
-    font-size: 0.85rem !important;
-    letter-spacing: 0.1rem;
-    text-transform: uppercase;
-    margin-bottom: 8px;
+    font-family: 'monospace';
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+    margin-bottom: 0.6rem;
     display: block;
-    transition: all 0.3s ease;
+    text-shadow: 0 0 8px rgba(88, 166, 255, 0.5);
 }
 
 .roadmap-card .mod-name {
-    color: #fff !important;
-    font-weight: 700 !important;
-    font-size: 1.2rem !important;
+    font-size: 1.1rem;
+    font-weight: 700;
     line-height: 1.4;
-    letter-spacing: -0.01em;
-    transition: all 0.3s ease;
-    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    margin-bottom: 1.25rem;
+    color: var(--text-main);
+    transition: color 0.3s;
 }
 
 .roadmap-card:hover .mod-name {
-    color: var(--h-color) !important;
-    text-shadow: 0 0 15px var(--h-color);
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-@media (max-width: 900px) {
-    .roadmap-semesters { grid-template-columns: 1fr !important; }
-    .year-title { font-size: 3rem !important; }
-}
-
-/* ===== Light Mode: Roadmap & Past Papers Fixes ===== */
-[data-theme="light"] .year-title {
-    color: #1a1a2e !important;
-}
-[data-theme="light"] .roadmap-year-header:hover .year-title {
-    color: var(--h-color) !important;
-}
-[data-theme="light"] .semester-stage {
-    background: rgba(0, 0, 0, 0.04) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-}
-[data-theme="light"] .roadmap-card {
-    background: rgba(0, 0, 0, 0.04) !important;
-}
-[data-theme="light"] .roadmap-card:hover {
-    background: rgba(0, 0, 0, 0.08) !important;
-}
-[data-theme="light"] .roadmap-card .mod-name {
-    color: #1a1a2e !important;
-    text-shadow: none !important;
-}
 [data-theme="light"] .roadmap-card:hover .mod-name {
-    color: var(--h-color) !important;
-    text-shadow: none !important;
+    color: var(--accent-primary);
+    text-shadow: none;
+}
+
+[data-theme="light"] .roadmap-card:hover .mod-id {
+    text-shadow: none;
+}
+
+.roadmap-card .mod-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.stat-pill {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.roadmap-card:hover .stat-pill {
+    background: rgba(88, 166, 255, 0.15);
+    border-color: rgba(88, 166, 255, 0.3);
+    color: var(--accent-primary);
+}
+
+/* Jaw-Dropping Animations */
+.roadmap-year-section {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.roadmap-year-section.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+    .curriculum-roadmap::before { left: 20px; }
+    .roadmap-year-header { gap: 1rem; }
+    .year-node { width: 55px; height: 55px; border-radius: 15px; }
+    .year-node span { font-size: 1rem; }
+    .year-title { font-size: 2rem; }
+    .roadmap-semesters { padding-left: 55px; }
+    .semester-stage::before { left: -35px; width: 25px; }
 }
 [data-theme="light"] .branch-node {
     background: #f0f2f5 !important;
@@ -2084,4 +2113,43 @@ select.timer-input:focus {
 .btn-reset-all:hover {
   background: rgba(248,81,73,0.12);
   border-color: var(--accent-danger);
+}
+
+/* Autumn Leaves Falling Animation */
+#leaves-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.leaf {
+    position: absolute;
+    top: -50px;
+    border-radius: 2px 15px 2px 15px;
+    animation: leafFall linear forwards;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.15));
+    will-change: transform;
+}
+
+@keyframes leafFall {
+    0% {
+        transform: translateY(0) rotate(0deg) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        /* Use CSS variables for random drift set in JS */
+        transform: translateY(110vh) rotate(var(--rev)) translateX(var(--drift));
+        opacity: 0;
+    }
 }
