@@ -421,6 +421,20 @@ function renderPastPapers() {
 window.togglePaper = function(moduleId, year) {
     if (!appState.papers[moduleId]) appState.papers[moduleId] = [];
     
+    // Find the element to animate
+    const nodes = document.querySelectorAll('.branch-node');
+    let targetNode = null;
+    nodes.forEach(node => {
+        if (node.querySelector('.year-val').textContent == year && 
+            node.closest('.paper-card').querySelector('h4').textContent.includes(moduleId)) {
+            targetNode = node;
+        }
+    });
+
+    if (targetNode) {
+        targetNode.classList.add('pop-animation');
+    }
+
     const index = appState.papers[moduleId].indexOf(year);
     if (index > -1) {
         appState.papers[moduleId].splice(index, 1);
@@ -429,7 +443,11 @@ window.togglePaper = function(moduleId, year) {
     }
     
     saveProgress();
-    renderPastPapers();
+    
+    // Delay re-render slightly to let animation finish or use a more surgical update
+    setTimeout(() => {
+        renderPastPapers();
+    }, 300);
 };
 
 function renderAchievements() {

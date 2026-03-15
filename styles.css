@@ -671,25 +671,41 @@ select:focus, input:focus {
 }
 
 .btn-small-square {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-subtle);
-    border-radius: 6px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
     color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: var(--transition-smooth);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
-[data-theme="light"] .btn-small-square { background: rgba(0, 0, 0, 0.05); }
+[data-theme="light"] .btn-small-square {
+    background: linear-gradient(145deg, #ffffff, #f0f2f5);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    color: #1a1a2e;
+}
 
 .btn-small-square:hover {
     background: var(--accent-primary);
     color: #fff;
     border-color: var(--accent-primary);
+    transform: translateY(-3px) scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
+}
+
+.btn-small-square:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
 }
 
 /* Timer Workspace */
@@ -1412,6 +1428,42 @@ select.timer-input:focus {
     position: relative;
     z-index: 3;
     box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    user-select: none;
+}
+
+.branch-node:active {
+    transform: scale(0.9) !important;
+}
+
+.branch-node.pop-animation {
+    animation: satisfyingPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes satisfyingPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.branch-node::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: var(--accent-success);
+    opacity: 0;
+    z-index: -1;
+    transition: all 0.4s ease;
+}
+
+.branch-node.done::before {
+    opacity: 0.1;
+    animation: pulseRipple 2s infinite;
+}
+
+@keyframes pulseRipple {
+    0% { transform: scale(1); opacity: 0.3; }
+    100% { transform: scale(1.4); opacity: 0; }
 }
 
 .branch-node .year-val {
@@ -1471,8 +1523,13 @@ select.timer-input:focus {
 
 /* HOLOGRAPHIC DEEP-SPACE CURRICULUM UI */
 #curriculum-section {
-    background: #000 !important;
-    overflow: hidden !important;
+    background: #000;
+    overflow: hidden;
+    transition: background 0.3s ease;
+}
+
+[data-theme="light"] #curriculum-section {
+    background: #ffffff !important;
 }
 
 #curriculum-display {
@@ -1606,6 +1663,11 @@ select.timer-input:focus {
     font-size: 2.5rem !important;
     color: #fff !important;
     text-shadow: 0 0 15px var(--h-color) !important;
+}
+
+[data-theme="light"] .year-node span {
+    color: #000000 !important;
+    text-shadow: none !important;
 }
 
 .year-node:hover {
